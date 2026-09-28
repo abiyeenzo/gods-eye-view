@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { createRailCards } from './railCards.js';
 import { createRailTimeline } from './railTimeline.js';
 
@@ -71,10 +72,10 @@ export function createWeatherPanel({
   cardsHost.className = 'weather-cards';
   const observedGroup = document.createElement('section');
   observedGroup.className = 'weather-observed-group';
-  observedGroup.setAttribute('aria-label', 'Observed history');
+  observedGroup.setAttribute('aria-label', t('weather.observedHistory'));
   const heading = document.createElement('h3');
   heading.className = 'panel-title';
-  heading.textContent = 'Observed history';
+  heading.textContent = t('weather.observedHistory');
   const scope = document.createElement('div');
   scope.className = 'weather-observed-scope';
   const observedCardsHost = document.createElement('div');

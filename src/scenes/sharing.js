@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { withShareSignal } from '../director/sharing/lifetime.js';
 import {
   readSceneShare,
@@ -131,7 +132,7 @@ export function createSceneSharing(director) {
       if (!alive(owner)) return;
       staged = input;
       inventory(input);
-      dialog.status.textContent = 'Ready to import';
+      dialog.status.textContent = t('sharing.readyToImport');
       dialog.text(
         'Apply replaces the current project. Export your current project first if you want to keep both.',
       );
@@ -210,7 +211,7 @@ export function createSceneSharing(director) {
             JSON.parse(shotText.value),
           );
           sceneText.value = json(details);
-          dialog.status.textContent = 'Anchor added to draft';
+          dialog.status.textContent = t('sharing.anchorAdded');
         }),
       dialog.body,
     );
@@ -260,7 +261,7 @@ export function createSceneSharing(director) {
           delete details.move;
           shotText.value = json(details);
         } catch {
-          dialog.status.textContent = 'Invalid shot JSON';
+          dialog.status.textContent = t('sharing.invalidShotJson');
         }
       },
       dialog.body,
@@ -374,7 +375,7 @@ export function createSceneSharing(director) {
         );
         if (alive(owner)) {
           download(text, 'scene.gevbundle.json');
-          dialog.status.textContent = 'Asset bundle downloaded';
+          dialog.status.textContent = t('sharing.assetBundleDownloaded');
         }
       }),
     );

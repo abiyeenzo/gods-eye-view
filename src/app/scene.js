@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { createApplicationOperations } from './operations.js';
 import * as Cesium from 'cesium';
 import {
@@ -41,7 +42,7 @@ export async function createApplicationScene({
       else window.__GOOGLE_MAPS_API_KEY__ = previousKey;
     });
   }
-  loaderStatus.textContent = 'Configuring viewer...';
+  loaderStatus.textContent = t('scene.configuringViewer');
   // Provider attribution stays visible, including clean-view and recording.
   const creditContainer = document.createElement('div');
   creditContainer.id = 'cesium-credits';
@@ -93,7 +94,7 @@ export async function createApplicationScene({
     viewer.scene.globe.show = true;
   }
 
-  loaderStatus.textContent = 'Initializing systems...';
+  loaderStatus.textContent = t('scene.initializingSystems');
 
   const mapStackController = new MapController(viewer, {
     requestRender: governorRequestRender,

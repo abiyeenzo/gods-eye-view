@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 /** Scene panel elements and text-only project presentation. */
 export function sceneElements(root = document) {
   const ids = {
@@ -47,7 +48,7 @@ export function renderSceneShots(
   if (!scene || scene.shots.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'scene-shot-empty';
-    empty.textContent = 'No shots yet. Use CAPTURE SHOT to save current look.';
+    empty.textContent = t('scenePresentation.noShotsYet');
     element.appendChild(empty);
     return;
   }
@@ -61,7 +62,7 @@ export function renderSceneShots(
     const label = document.createElement('div');
     label.className = 'scene-shot-label';
     label.textContent = shot.title;
-    label.title = 'Double-click to rename';
+    label.title = t('scenePresentation.doubleClickRename');
     listen(label, 'click', () => select(shot.id));
     listen(label, 'dblclick', () => {
       if (label.children.length) return;
@@ -96,11 +97,11 @@ export function renderSceneShots(
     actions.className = 'scene-shot-actions';
     const loadButton = document.createElement('button');
     loadButton.className = 'scene-shot-btn';
-    loadButton.textContent = 'LOAD';
+    loadButton.textContent = t('scenePresentation.load');
     listen(loadButton, 'click', () => load(scene.id, shot.id));
     const deleteButton = document.createElement('button');
     deleteButton.className = 'scene-shot-btn scene-shot-danger';
-    deleteButton.textContent = 'DEL';
+    deleteButton.textContent = t('scenePresentation.del');
     listen(deleteButton, 'click', () => remove(scene.id, shot.id));
     actions.appendChild(loadButton);
     actions.appendChild(deleteButton);

@@ -350,7 +350,7 @@ export class RealtimeInput {
    */
   updateVoiceButtonLabel() {
     if (!this.ui.buttonLabel) return;
-    this.ui.buttonLabel.textContent = 'MIC';
+    this.ui.buttonLabel.textContent = t('voice.mic');
     if (this.ui.helpDetail) {
       this.ui.helpDetail.textContent = resolveVoiceControlHint(
         this.pushToTalkMode,

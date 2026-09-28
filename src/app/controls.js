@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { catalogControlServices } from './catalog.js';
 import { StyleManager } from '../ui/composition.js';
 import { flyToAustin } from '../camera.js';
@@ -41,10 +42,10 @@ export function createApplicationControls({
 
   // If no share link state, do default fly-to Austin
   if (!styleManager.hasShareState) {
-    loaderStatus.textContent = 'Flying to Austin, TX...';
+    loaderStatus.textContent = t('controls.flyingTo', { location: 'Austin, TX' });
     defer(flyToAustin(viewer));
   } else {
-    loaderStatus.textContent = 'Restoring shared view...';
+    loaderStatus.textContent = t('controls.restoringSharedView');
   }
 
   return { styleManager, weatherEffects, cockpitCloudEffects };

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import * as Cesium from 'cesium';
 import { isPointerFree } from '../data/inputOwnership.js';
 import { createInteractionSession } from '../director/interactions/session.js';
@@ -24,7 +25,7 @@ export function createSceneInteractions(
         card.append(text);
         if (item.action.url) {
           const link = document.createElement('a');
-          link.textContent = 'Source';
+          link.textContent = t('interactions.source');
           link.style.color = '#6eeaff';
           link.href = item.action.url;
           link.target = '_blank';
@@ -104,7 +105,7 @@ export function createSceneInteractions(
       });
       const owner = panel;
       const title = document.createElement('strong');
-      title.textContent = 'Scene actions';
+      title.textContent = t('interactions.sceneActions');
       panel.append(title);
       status = document.createElement('p');
       status.setAttribute('role', 'status');

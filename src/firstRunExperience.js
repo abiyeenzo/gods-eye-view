@@ -1,4 +1,5 @@
 import { createSurfaceKeyboard } from './ui/surfaceKeyboard.js';
+import { t } from '../i18n/index.js';
 
 // First-run mission launcher.
 //
@@ -92,12 +93,12 @@ export const FIRST_RUN_MISSIONS = Object.freeze({
   contacts: Object.freeze({
     kind: 'context',
     contextMode: 'contacts',
-    busyText: 'Starting live contacts…',
+    busyText: t('firstRun.busyContacts'),
   }),
   'space-missions': Object.freeze({
     kind: 'context',
     contextMode: 'space-missions',
-    busyText: 'Opening space missions…',
+    busyText: t('firstRun.busySpace'),
   }),
   environmental: Object.freeze({
     kind: 'globe',
@@ -115,7 +116,7 @@ export const FIRST_RUN_MISSIONS = Object.freeze({
     // before a launch. LEDGERED post-launch. Until it lands, keyless visitors
     // are judged on the layer row, which tells them the truth.
     layerIds: Object.freeze(['earthquakes', 'local-firms']),
-    busyText: 'Scanning active events…',
+    busyText: t('firstRun.busyEvents'),
   }),
   explore: Object.freeze({ kind: 'none' }),
 });
@@ -440,7 +441,7 @@ export function initFirstRunExperience({
       button.setAttribute('aria-disabled', String(next));
     if (!status) return;
     if (next)
-      status.textContent = FIRST_RUN_MISSIONS[choice]?.busyText || 'Working…';
+      status.textContent = FIRST_RUN_MISSIONS[choice]?.busyText || t('firstRun.working');
     else if (status.dataset.sticky !== 'true')
       status.textContent = defaultStatus;
   };
@@ -490,7 +491,7 @@ export function initFirstRunExperience({
       Array.isArray(failed) && failed.length ? ` (${failed.join(', ')})` : '';
     if (status) {
       status.dataset.sticky = 'true';
-      status.textContent = `Could not open that mission${detail}. Retry or explore manually.`;
+      status.textContent = t('firstRun.couldNotOpen') + detail;
     }
     setBusy(false);
   };
@@ -506,8 +507,7 @@ export function initFirstRunExperience({
     if (box) box.checked = !wanted;
     if (!status) return;
     status.dataset.sticky = 'true';
-    status.textContent =
-      'This browser is blocking storage, so that could not be saved.';
+    status.textContent = t('firstRun.storageBlocked');
   };
 
   const keyboard = createSurfaceKeyboard({

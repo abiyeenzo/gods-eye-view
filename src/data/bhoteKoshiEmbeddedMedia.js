@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import * as Cesium from 'cesium';
 
 const YOUTUBE_HOSTS = new Set([
@@ -868,7 +869,7 @@ export function createBhoteKoshiEmbeddedMedia({
   }
 
   async function mountX(current, token) {
-    current.status.textContent = 'LOADING X POST…';
+    current.status.textContent = t('media.loadingPosts');
     try {
       const api = await xLoader(documentRef, globalRef);
       if (token !== generation || record !== current) return;
@@ -886,12 +887,12 @@ export function createBhoteKoshiEmbeddedMedia({
       if (token !== generation || record !== current) return;
       if (!widget)
         throw new Error('The X post is unavailable or cannot be embedded.');
-      current.status.textContent = 'X POST · PROVIDER CONTROLS';
+      current.status.textContent = t('media.xPostProvider');
       position();
     } catch (error) {
       if (token !== generation || record !== current) return;
       current.card.classList.add('is-unavailable');
-      current.status.textContent = `${String(error?.message || 'X embed unavailable')} OPEN ORIGINAL.`;
+      current.status.textContent = `${String(error?.message || t('media.xEmbedUnavailable'))} ${t('media.openOriginal')}`;
       position();
     }
   }
@@ -904,7 +905,7 @@ export function createBhoteKoshiEmbeddedMedia({
     session.shouldPlay = autoplay === true;
     session.onReady = () => {
       if (token !== generation || record !== current) return;
-      current.status.textContent = 'FACEBOOK · PROVIDER CONTROLS';
+      current.status.textContent = t('media.facebookProvider');
       current.card.classList.remove('is-unavailable');
       position();
     };
@@ -916,7 +917,7 @@ export function createBhoteKoshiEmbeddedMedia({
     };
     session.onPlaybackBlocked = () => {
       if (token !== generation || record !== current) return;
-      current.status.textContent = 'AUTOPLAY BLOCKED · USE PROVIDER CONTROLS';
+      current.status.textContent = t('media.autoplayBlocked');
     };
     if (session.ready) session.onReady();
     else if (session.error) session.onError(session.error);
@@ -992,7 +993,7 @@ export function createBhoteKoshiEmbeddedMedia({
     link.href = source.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.textContent = 'OPEN ORIGINAL ↗';
+    link.textContent = t('media.openOriginal');
     footer.append(title, status, link);
     const body = documentRef.createElement('div');
     body.className = 'bhote-embedded-callout-body';

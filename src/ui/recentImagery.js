@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 /**
  * Recent Imagery readout for the right rail (`#recent-imagery-panel`). The
  * body is a fixed stack in which no block changes height and no control
@@ -194,7 +195,7 @@ export function createRecentImageryPanel({
   const zoomIn = el('button', 'data-toggle-chip ri-zoom-in', notice, 'ZOOM IN');
   zoomIn.id = 'ri-zoom-in';
   zoomIn.type = 'button';
-  zoomIn.title = 'Fly in until the view fits the 1,000 km limit';
+  zoomIn.title = t('imagery.flyInLimit');
 
   const strip = el('div', 'ri-block ri-strip', root);
   strip.id = 'ri-strip';
@@ -261,7 +262,7 @@ export function createRecentImageryPanel({
   const swap = el('button', 'data-toggle-chip ri-swap', controls, 'SWAP');
   swap.id = 'ri-swap';
   swap.type = 'button';
-  swap.title = 'Trade the two sides of the divider';
+  swap.title = t('imagery.tradeDividerSides');
   const exportHost = el('div', 'ri-exports', controls);
   const exports = createRailCardBlocks({
     container: exportHost,

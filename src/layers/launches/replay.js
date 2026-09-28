@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import * as Cesium from 'cesium';
 import {
   REPLAY_ASCENT_FALLBACK_SEC,
@@ -200,10 +201,10 @@ export function createReplay({ state: layerState, services, parts, source }) {
     if (speedControl) speedControl.hidden = !replayAvailable;
     button.hidden = active || !replayAvailable;
     button.disabled = !replayAvailable;
-    button.textContent = 'REPLAY ASCENT';
+    button.textContent = t('replay.replayAscent');
     button.classList.remove('active');
     button.setAttribute('aria-pressed', String(active));
-    button.title = 'Replay the estimated ascent with a following camera';
+    button.title = t('replay.replayAscentDesc');
     if (transport) {
       transport.hidden = !active;
       transport.classList.toggle(

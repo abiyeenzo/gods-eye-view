@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { createVoiceControl } from './control.js';
 import { createVoiceSession } from './session.js';
 
@@ -36,7 +37,7 @@ export function createVoiceCommands({
   if (ui.costValue) ui.costValue.hidden = !capabilities.costControls;
   if (!capabilities.pushToTalk) {
     ui.button.setAttribute('aria-label', 'Toggle voice control');
-    if (ui.helpDetail) ui.helpDetail.textContent = 'Activate to toggle voice';
+    if (ui.helpDetail) ui.helpDetail.textContent = t('voice.activateToToggle');
   }
   // Retain the existing controller's inspection surface for browser tools.
   const controls = adapter.controller || session;

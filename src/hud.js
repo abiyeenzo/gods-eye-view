@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { applicationServices } from './services/application.js';
 /**
  * @module hud
@@ -358,7 +359,7 @@ export class IntelHUD {
       if (el) el.textContent = `MGRS: ${formatted}`;
     } catch {
       const el = document.getElementById('hud-mgrs');
-      if (el) el.textContent = 'MGRS: ---';
+      if (el) el.textContent = t('hud.mgrs');
     }
 
     // Lat/Lon DMS

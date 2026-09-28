@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 /** Regional briefing requests, pages and rotation for the Cockpit controller. */
 import {
   COCKPIT_BRIEF_ROTATE_MS,
@@ -94,7 +95,7 @@ export function stopBriefRotation() {
 export function updateLocalPosition(info) {
   if (!this.localCoordinates) return;
   if (!Number.isFinite(info.latitude) || !Number.isFinite(info.longitude)) {
-    this.localCoordinates.textContent = 'POSITION UNAVAILABLE';
+    this.localCoordinates.textContent = t('cockpit.positionUnavailable');
     return;
   }
   const lat = `${Math.abs(info.latitude).toFixed(3)}°${info.latitude >= 0 ? 'N' : 'S'}`;
@@ -180,9 +181,9 @@ export function renderRegionalBriefStatus(status, info) {
   }
   if (status === 'unavailable') this.newsList?.replaceChildren();
   if (this.localPlace && status === 'loading')
-    this.localPlace.textContent = 'RESOLVING REGION';
+    this.localPlace.textContent = t('cockpit.resolvingRegion');
   if (this.localPlace && status === 'unavailable')
-    this.localPlace.textContent = 'REGION UNAVAILABLE';
+    this.localPlace.textContent = t('cockpit.regionUnavailable');
   this.updateLocalPosition(info);
 }
 

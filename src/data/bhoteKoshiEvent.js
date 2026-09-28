@@ -823,7 +823,7 @@ function createPanel(event, handlers) {
         <div class="bhote-event-kicker">EVENT RECONSTRUCTION · 26 AUG 2026</div>
         <div class="bhote-event-title">BHOTE KOSHI OUTBURST FLOOD</div>
       </div>
-      <button class="bhote-event-icon-btn" type="button" data-action="close" title="Close event layer" aria-label="Close event layer">×</button>
+      <button class="bhote-event-icon-btn" type="button" data-action="close" title="Close event layer" data-i18n-aria="event.closeLayer">×</button>
     </div>
     <div class="bhote-event-status-row">
       <span class="bhote-event-status observed">OBSERVED IMAGERY</span>
@@ -834,7 +834,7 @@ function createPanel(event, handlers) {
         <span>2021 HISTORICAL REFERENCE / 2026 POST-EVENT</span>
         <span data-role="split-readout">50 / 50</span>
       </div>
-      <input class="bhote-event-range" data-role="split" type="range" min="0" max="100" value="50" aria-label="Historical reference and post-event image split" />
+      <input class="bhote-event-range" data-role="split" type="range" min="0" max="100" value="50" data-i18n-aria="event.historicalReference" />
       <div class="bhote-event-dates">
         <span data-role="before-date"></span>
         <span data-role="after-date"></span>
@@ -845,15 +845,15 @@ function createPanel(event, handlers) {
         <span data-role="timeline-label">RECONSTRUCTION CLOCK</span>
         <span data-role="time"></span>
       </div>
-      <input class="bhote-event-range flood" data-role="progress" type="range" min="0" max="1000" value="0" aria-label="Schematic downstream progression" />
-      <div class="bhote-event-story-nav" aria-label="Story beat navigation">
-        <button type="button" data-action="previous-beat" title="Previous story beat" aria-label="Previous story beat">‹</button>
+      <input class="bhote-event-range flood" data-role="progress" type="range" min="0" max="1000" value="0" data-i18n-aria="event.schematicProgression" />
+      <div class="bhote-event-story-nav" data-i18n-aria="event.storyBeatNav">
+        <button type="button" data-action="previous-beat" title="Previous story beat" data-i18n-aria="event.previousBeat">‹</button>
         <div class="bhote-event-story-current">
           <span data-role="beat-index">01 / 06</span>
           <strong data-role="beat-title" aria-live="polite">CAUSE</strong>
           <small data-role="beat-meta">CAPTURE TIME UNVERIFIED</small>
         </div>
-        <button type="button" data-action="next-beat" title="Next story beat" aria-label="Next story beat">›</button>
+        <button type="button" data-action="next-beat" title="Next story beat" data-i18n-aria="event.nextBeat">›</button>
       </div>
       <div class="bhote-event-actions">
         <button type="button" data-action="play">▶ PLAY</button>

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { createSurfaceKeyboard } from './ui/surfaceKeyboard.js';
 
 /**
@@ -88,9 +89,8 @@ function buildRow(documentRef, key) {
   if (key.clientExposed) {
     const exposed = documentRef.createElement('span');
     exposed.className = 'key-setup-exposed';
-    exposed.textContent = 'browser-side';
-    exposed.title =
-      'This key runs in the browser by design — restrict it at the provider (see SECURITY.md)';
+    exposed.textContent = t('keySetup.keyBrowserSide');
+    exposed.title = t('keySetup.keyBrowserSideTip');
     head.append(exposed);
   }
   if (external) {
@@ -98,9 +98,8 @@ function buildRow(documentRef, key) {
     // facts this panel reports, never values it rewrites or deletes.
     const badge = documentRef.createElement('span');
     badge.className = 'key-setup-external';
-    badge.textContent = 'configured externally';
-    badge.title =
-      'Supplied by your environment, Keychain, or launcher — change it where it was set';
+    badge.textContent = t('keySetup.keyExternal');
+    badge.title = t('keySetup.keyExternalTip');
     head.append(badge);
   }
   const get = documentRef.createElement('a');
@@ -108,7 +107,7 @@ function buildRow(documentRef, key) {
   get.href = key.getUrl;
   get.target = '_blank';
   get.rel = 'noopener noreferrer';
-  get.textContent = key.set ? 'MANAGE ↗' : 'GET KEY ↗';
+  get.textContent = key.set ? t('keySetup.keyManage') : t('keySetup.keyGet');
   head.append(get);
 
   const unlocks = documentRef.createElement('p');
@@ -129,8 +128,8 @@ function buildRow(documentRef, key) {
       input.dataset.envVar = envVar;
       input.setAttribute('aria-label', envVar);
       input.placeholder = key.set
-        ? `${envVar} saved — paste to replace`
-        : `paste ${envVar}`;
+        ? t('keySetup.placeholderSet', { envVar })
+        : t('keySetup.placeholderPaste', { envVar });
       fields.append(input);
     }
     if (key.managed === 'file') {
@@ -138,7 +137,7 @@ function buildRow(documentRef, key) {
       remove.type = 'button';
       remove.className = 'key-setup-remove';
       remove.dataset.keySetupRemove = JSON.stringify(key.envVars);
-      remove.textContent = 'REMOVE';
+      remove.textContent = t('keySetup.removeBtn');
       remove.title = `Remove ${key.title} from this app's saved keys`;
       fields.append(remove);
     }
@@ -377,11 +376,11 @@ export async function initKeySetup({
     // a deliberate two-step the lure cannot pre-satisfy.
     const ok =
       typeof globalThis.confirm !== 'function' ||
-      globalThis.confirm('Remove this key from your saved configuration?');
+      globalThis.confirm(t('keySetup.removeConfirm'));
     if (!ok) return;
     void submitUpdates(
       Object.fromEntries(envVars.map((name) => [name, null])),
-      'Removed from',
+      t('keySetup.removed'),
     );
   });
 

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import {
   radioTunerSlot,
   radioTunerCommitSlot,
@@ -301,9 +302,9 @@ export function bindRadioControls() {
       this._radioTunerBandPinnedForNavigation = false;
       if (result.reason === 'station-unavailable') {
         if (this._radioTunerValue)
-          this._radioTunerValue.textContent = 'OFF AIR';
+          this._radioTunerValue.textContent = t('radio.offAir');
         if (this._radioTunerStation)
-          this._radioTunerStation.textContent = 'STATION UNAVAILABLE';
+          this._radioTunerStation.textContent = t('radio.stationUnavailable');
         this._radioTunerSlider?.setAttribute(
           'aria-valuetext',
           'Station unavailable after directory refresh',

@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 /** Reconcile actionable signal rows without disturbing native keyboard focus. */
 
 export function renderCockpitSignals() {
@@ -43,7 +44,7 @@ export function renderCockpitSignals() {
         chevron.className =
           'material-symbols-outlined cockpit-signal-target-chevron';
         chevron.setAttribute('aria-hidden', 'true');
-        chevron.textContent = 'chevron_right';
+        chevron.textContent = t('cockpit.chevronRight');
         heading.append(label, rule, chevron);
       }
       body.append(heading, document.createElement('span'));

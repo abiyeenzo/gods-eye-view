@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import {
   accentForVesselType,
   normalizeVesselType,
@@ -30,7 +31,7 @@ export function createCards({
     const el = document.getElementById('hud-ais-vessel');
     if (!el) return;
     el.classList.remove('active');
-    el.textContent = 'AIS: --';
+    el.textContent = t('cards.aisDefault');
   }
 
   function trimHudValue(value, maxLength) {

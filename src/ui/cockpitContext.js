@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 /** Contact readouts and nearby-signal presentation for the Cockpit controller. */
 import * as Cesium from 'cesium';
 import {
@@ -133,8 +134,8 @@ export function updateContext(info, heading) {
     this.contextDirection.classList.toggle('unknown', relative === null);
   }
   if (this.contextBearing) {
-    if (relative === null) this.contextBearing.textContent = 'BRG —';
-    else if (Math.abs(relative) < 8) this.contextBearing.textContent = 'AHEAD';
+    if (relative === null) this.contextBearing.textContent = t('cockpit.brg');
+    else if (Math.abs(relative) < 8) this.contextBearing.textContent = t('cockpit.ahead');
     else
       this.contextBearing.textContent = `${relative < 0 ? 'L' : 'R'} ${String(Math.round(Math.abs(relative))).padStart(3, '0')}°`;
   }

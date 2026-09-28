@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import * as Cesium from 'cesium';
 import { governorRequestRender } from './renderGovernor.js';
 
@@ -463,12 +464,12 @@ export class CelestialRing {
     this._sunMarker = document.createElement('span');
     this._sunMarker.className =
       'celestial-marker celestial-sun material-symbols-outlined';
-    this._sunMarker.textContent = 'light_mode';
+    this._sunMarker.textContent = t('celestial.lightMode');
 
     this._moonMarker = document.createElement('span');
     this._moonMarker.className =
       'celestial-marker celestial-moon material-symbols-outlined';
-    this._moonMarker.textContent = 'dark_mode';
+    this._moonMarker.textContent = t('celestial.darkMode');
 
     this._root.append(
       this._ringOutline,
