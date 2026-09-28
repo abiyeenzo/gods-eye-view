@@ -42,7 +42,12 @@ export function detectLocale(documentRef) {
   } catch {
     /* storage unavailable */
   }
-  const nav = doc?.navigator;
+  const nav =
+    doc?.ownerDocument?.navigator ||
+    doc?.navigator ||
+    globalThis.navigator ||
+    globalThis?.navigator ||
+    null;
   const raw =
     (nav?.languages && nav.languages.length ? nav.languages[0] : nav?.language || nav?.userLanguage || '') || '';
   const tag = raw.toLowerCase().split(/[-_]/)[0];
@@ -109,6 +114,16 @@ export function applyLocale(documentRef) {
         node.placeholder = bundle[key];
       } else {
         node.textContent = bundle[key];
+      }
+    }
+  }
+  // Apply aria-label translations from data-i18n-aria attributes.
+  const ariaNodes = doc?.querySelectorAll?.('[data-i18n-aria]');
+  if (ariaNodes) {
+    for (const node of ariaNodes) {
+      const key = node.getAttribute('data-i18n-aria');
+      if (key && bundle[key]) {
+        node.setAttribute('aria-label', bundle[key]);
       }
     }
   }
