@@ -1,12 +1,15 @@
 // God's Eye View i18n core (phase 1): catalog registry, translation, and
 // Intl-based formatting. English is the source/fallback catalog; a missing key
 // in another locale falls back to English with a development-only warning.
-// English is also the ONLY shipped catalog in this foundation change — each
-// additional locale lands as a stacked follow-up PR following the recipe in
-// docs/TRANSLATORS.md (catalog files + registration + CATALOG_LOCALES entry).
+// The shipped set is catalog-driven (CATALOG_LOCALES in locale.js): the
+// foundation shipped English only, and each additional locale lands as a
+// stacked follow-up PR following the recipe in docs/TRANSLATORS.md (catalog
+// files + registration + CATALOG_LOCALES entry). Spanish is the first.
 // Every shipped catalog is built UNCONDITIONALLY — the build cost is trivial
-// and the registry stays declarative — but only locales in the configured pair
-// are offered/accepted (see locale.js resolveLocalePair).
+// and the registry stays declarative — but shipping and offering are
+// separate decisions: only locales in the offered pair (the built-in
+// FALLBACK_PAIR or the GEV_* env defines) are offered/accepted (see
+// locale.js resolveLocalePair and docs/TRANSLATORS.md).
 //
 // APPEND-ONLY NAMESPACE REGISTRATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -26,9 +29,49 @@ import * as enShell from './locales/en/shell.js';
 import * as enCockpit from './locales/en/cockpit.js';
 import * as enLayers from './locales/en/layers.js';
 import * as enSetup from './locales/en/setup.js';
+import * as esShell from './locales/es/shell.js';
+import * as esCockpit from './locales/es/cockpit.js';
+import * as esLayers from './locales/es/layers.js';
+import * as esSetup from './locales/es/setup.js';
+import * as frShell from './locales/fr/shell.js';
+import * as frCockpit from './locales/fr/cockpit.js';
+import * as frLayers from './locales/fr/layers.js';
+import * as frSetup from './locales/fr/setup.js';
+import * as deShell from './locales/de/shell.js';
+import * as deCockpit from './locales/de/cockpit.js';
+import * as deLayers from './locales/de/layers.js';
+import * as deSetup from './locales/de/setup.js';
+import * as ptShell from './locales/pt/shell.js';
+import * as ptCockpit from './locales/pt/cockpit.js';
+import * as ptLayers from './locales/pt/layers.js';
+import * as ptSetup from './locales/pt/setup.js';
+import * as itShell from './locales/it/shell.js';
+import * as itCockpit from './locales/it/cockpit.js';
+import * as itLayers from './locales/it/layers.js';
+import * as itSetup from './locales/it/setup.js';
+import * as jaShell from './locales/ja/shell.js';
+import * as jaCockpit from './locales/ja/cockpit.js';
+import * as jaLayers from './locales/ja/layers.js';
+import * as jaSetup from './locales/ja/setup.js';
+import * as zhShell from './locales/zh/shell.js';
+import * as zhCockpit from './locales/zh/cockpit.js';
+import * as zhLayers from './locales/zh/layers.js';
+import * as zhSetup from './locales/zh/setup.js';
+import * as arShell from './locales/ar/shell.js';
+import * as arCockpit from './locales/ar/cockpit.js';
+import * as arLayers from './locales/ar/layers.js';
+import * as arSetup from './locales/ar/setup.js';
 
 // Append new namespace modules here (one import + one entry per locale).
 const EN_NAMESPACES = [enShell, enCockpit, enLayers, enSetup];
+const ES_NAMESPACES = [esShell, esCockpit, esLayers, esSetup];
+const FR_NAMESPACES = [frShell, frCockpit, frLayers, frSetup];
+const DE_NAMESPACES = [deShell, deCockpit, deLayers, deSetup];
+const PT_NAMESPACES = [ptShell, ptCockpit, ptLayers, ptSetup];
+const IT_NAMESPACES = [itShell, itCockpit, itLayers, itSetup];
+const JA_NAMESPACES = [jaShell, jaCockpit, jaLayers, jaSetup];
+const ZH_NAMESPACES = [zhShell, zhCockpit, zhLayers, zhSetup];
+const AR_NAMESPACES = [arShell, arCockpit, arLayers, arSetup];
 
 /**
  * Prefix one namespace module's flat, namespace-relative keys with its
@@ -72,6 +115,14 @@ function buildCatalog(namespaceModules) {
 
 const CATALOGS = Object.freeze({
   [DEFAULT_LOCALE]: buildCatalog(EN_NAMESPACES),
+  es: buildCatalog(ES_NAMESPACES),
+  fr: buildCatalog(FR_NAMESPACES),
+  de: buildCatalog(DE_NAMESPACES),
+  pt: buildCatalog(PT_NAMESPACES),
+  it: buildCatalog(IT_NAMESPACES),
+  ja: buildCatalog(JA_NAMESPACES),
+  zh: buildCatalog(ZH_NAMESPACES),
+  ar: buildCatalog(AR_NAMESPACES),
 });
 
 /**

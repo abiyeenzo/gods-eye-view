@@ -1,14 +1,16 @@
 // Locale identity for God's Eye View (i18n phase 1).
 //
 // English is the default-without-configuration, the ALWAYS-shipped fallback
-// catalog, and the compatibility baseline (docs/TRANSLATORS.md). It is the
-// only locale with a shipped catalog in this foundation change: additional
-// locales land as stacked follow-up PRs, one per locale, each following the
-// recipe in docs/TRANSLATORS.md. Which pair the app actually offers is
-// configured at build/dev time through GEV_DEFAULT_LOCALE /
-// GEV_SECONDARY_LOCALE (vite.config.js client defines) and resolved here —
-// pair members are validated against the shipped catalogs, so while only
-// English ships the pair degenerates to en-only (a single EN button).
+// catalog, and the compatibility baseline (docs/TRANSLATORS.md). Neutral
+// international Spanish ('es') is the first follow-up locale and the stock
+// secondary; further locales land as stacked PRs, one per locale, following
+// the recipe in docs/TRANSLATORS.md. SHIPPING and OFFERING are separate
+// decisions: CATALOG_LOCALES gates which catalogs are bundled and valid,
+// while the pair the app actually offers is the built-in FALLBACK_PAIR
+// unless build/dev config names another through GEV_DEFAULT_LOCALE /
+// GEV_SECONDARY_LOCALE (vite.config.js client defines) — pair members are
+// validated against the shipped catalogs, so a configured secondary
+// without a catalog falls back to the built-in pair.
 // This module owns ONLY locale resolution and document language metadata —
 // catalogs and translation helpers live in src/i18n/index.js.
 
@@ -16,42 +18,79 @@
 export const LOCALE_STORAGE_KEY = 'gev:locale:v1';
 
 /**
- * Locales with a shipped catalog. 'en' is the fallback catalog locale
- * (DEFAULT_LOCALE); every entry here can be normalized and looked up, though
- * only locales in the configured PAIR (see resolveLocalePair) are offered in
- * the UI and accepted during resolution. A locale PR appends its code here
- * alongside its catalogs (docs/TRANSLATORS.md) — nothing else flips shipping.
+ * Locales with a SHIPPED catalog — bundled and valid. 'en' is the fallback
+ * catalog locale (DEFAULT_LOCALE). Appending a code here alongside its
+ * catalogs (docs/TRANSLATORS.md) ships it and makes the code valid as a
+ * pair member, but does NOT offer it: the UI selector and the ?lang=/
+ * storage/navigator acceptance follow the resolved pair (FALLBACK_PAIR or
+ * the env values), which validates against this list and never derives
+ * from it. Making a shipped locale the stock secondary is a separate,
+ * deliberate edit to FALLBACK_PAIR (docs/TRANSLATORS.md, "Making a locale
+ * the stock secondary").
  */
-export const CATALOG_LOCALES = Object.freeze(['en']);
+export const CATALOG_LOCALES = Object.freeze([
+  'en',
+  'es',
+  'fr',
+  'de',
+  'pt',
+  'it',
+  'ja',
+  'zh',
+  'ar',
+]);
 
 /**
  * Locale codes normalizeLocale folds regional variants for. Kept ahead of
  * shipping on purpose: normalization is locale-code hygiene ('es-MX' → 'es'),
  * while SHIPPING is catalog-driven through CATALOG_LOCALES — so a locale PR
- * edits only CATALOG_LOCALES plus its catalog files, and a code listed here
- * without a catalog normalizes but is never offerable or resolvable.
+ * edits only CATALOG_LOCALES plus its catalog files to SHIP it, and a code
+ * listed here without a catalog normalizes but is never offerable or
+ * resolvable.
  */
-const NORMALIZABLE_LOCALES = Object.freeze(['en', 'es', 'fr', 'ru', 'uk']);
+const NORMALIZABLE_LOCALES = Object.freeze([
+  'en',
+  'es',
+  'fr',
+  'de',
+  'pt',
+  'it',
+  'ja',
+  'zh',
+  'ar',
+  'ru',
+  'uk',
+]);
 
 /** Fallback catalog locale and no-config default: always English. */
 export const DEFAULT_LOCALE = 'en';
 
 /**
- * Built-in pair used when no env/config shapes one, or a configured one is
- * unusable. English-only while English is the only shipped catalog: the
- * selector degenerates to a single EN button until a secondary locale PR
- * restores the built-in pair.
+ * The STOCK pair: what the unconfigured build offers in the dock language
+ * switch and accepts from ?lang=/storage/navigator — and the fallback when
+ * no env/config shapes a pair, or a configured one is unusable. English
+ * plus the first follow-up locale, Spanish. Changing the stock secondary is
+ * a deliberate policy edit HERE (with the doc updates named in
+ * docs/TRANSLATORS.md, "Making a locale the stock secondary"), never a
+ * side effect of appending to CATALOG_LOCALES — members must already ship,
+ * or the unconfigured build would offer a locale with no catalog.
  */
 const FALLBACK_PAIR = Object.freeze({
   defaultLocale: 'en',
-  secondaryLocale: 'en',
+  secondaryLocale: 'es',
 });
 
-/** Document metadata per normalizable locale code. All of them are LTR. */
+/** Document metadata per normalizable locale code. Arabic is the only RTL one. */
 export const LOCALE_METADATA = Object.freeze({
   en: Object.freeze({ dir: 'ltr' }),
   es: Object.freeze({ dir: 'ltr' }),
   fr: Object.freeze({ dir: 'ltr' }),
+  de: Object.freeze({ dir: 'ltr' }),
+  pt: Object.freeze({ dir: 'ltr' }),
+  it: Object.freeze({ dir: 'ltr' }),
+  ja: Object.freeze({ dir: 'ltr' }),
+  zh: Object.freeze({ dir: 'ltr' }),
+  ar: Object.freeze({ dir: 'rtl' }),
   ru: Object.freeze({ dir: 'ltr' }),
   uk: Object.freeze({ dir: 'ltr' }),
 });
@@ -64,7 +103,7 @@ export const LOCALE_METADATA = Object.freeze({
  * shipping: offering/resolving a locale additionally requires a catalog
  * (CATALOG_LOCALES) — see resolveLocalePair.
  * @param {*} candidate Raw locale tag (?lang= value, stored value, navigator entry).
- * @returns {'en'|'es'|'fr'|'ru'|'uk'|null}
+ * @returns {'en'|'es'|'fr'|'de'|'pt'|'it'|'ja'|'zh'|'ar'|'ru'|'uk'|null}
  */
 export function normalizeLocale(candidate) {
   if (typeof candidate !== 'string') return null;
@@ -102,7 +141,7 @@ function warnInvalidPair(rawDefault, rawSecondary) {
   if (import.meta.env?.DEV !== true) return;
   console.warn(
     `[i18n] unusable locale pair ${JSON.stringify(String(rawDefault))}/` +
-      `${JSON.stringify(String(rawSecondary))} — offering English only`,
+      `${JSON.stringify(String(rawSecondary))} — falling back to en+es`,
   );
 }
 
@@ -115,10 +154,9 @@ function warnInvalidPair(rawDefault, rawSecondary) {
  * SHIPPING IS CATALOG-DRIVEN: both members must name a locale in
  * CATALOG_LOCALES. An unknown code, an unshipped code (a locale PR not yet
  * merged), or a degenerate pair (the same locale twice) returns the built-in
- * pair instead, and a dev-only console.warn explains why — except when the
- * raw values already ARE the built-in pair, which is the normal unconfigured
- * state and must stay silent. While English is the only shipped catalog the
- * built-in pair is en-only, so the selector renders a single EN button.
+ * en+es pair instead, and a dev-only console.warn explains why — except when
+ * the raw values already ARE the built-in pair, which is the normal
+ * unconfigured state and must stay silent.
  *
  * availableLocales is the deduped [default, secondary, 'en'] triple — English
  * is always shippable because its catalog is the unconditional fallback.
@@ -154,15 +192,31 @@ export function resolveLocalePair(config) {
     ) {
       warnInvalidPair(rawDefault, rawSecondary);
     }
-    return pairOf(FALLBACK_PAIR.defaultLocale, FALLBACK_PAIR.secondaryLocale);
+    return pairOf(
+      FALLBACK_PAIR.defaultLocale,
+      FALLBACK_PAIR.secondaryLocale,
+      CATALOG_LOCALES,
+    );
   }
-  return pairOf(defaultLocale, secondaryLocale);
+  // Neither GEV_* value is set: the stock build offers every shipped locale.
+  const configured = [raw?.defaultLocale, raw?.secondaryLocale].some(
+    (value) => typeof value === 'string' && value.trim(),
+  );
+  return pairOf(
+    defaultLocale,
+    secondaryLocale,
+    configured ? [] : CATALOG_LOCALES,
+  );
 }
 
-/** Freeze the deduped pair + always-shipped English. */
-function pairOf(defaultLocale, secondaryLocale) {
+/**
+ * Freeze the deduped pair + always-shipped English. The stock (unconfigured)
+ * build passes every shipped locale as `offered`, so the dock lists them all;
+ * an explicit GEV_* pair stays restricted to that pair on purpose.
+ */
+function pairOf(defaultLocale, secondaryLocale, offered = []) {
   const availableLocales = [
-    ...new Set([defaultLocale, secondaryLocale, DEFAULT_LOCALE]),
+    ...new Set([defaultLocale, secondaryLocale, DEFAULT_LOCALE, ...offered]),
   ];
   return Object.freeze({
     defaultLocale,
@@ -264,9 +318,9 @@ export function writeStoredLocale(locale, storage) {
  *
  * Every step only accepts locales in the configured pair (which always
  * includes English); each step that yields nothing (absent or out-of-pair)
- * defers to the next. Without env configuration the built-in pair is en-only
- * (English is the only shipped catalog), so every step resolves English —
- * byte-identical to the pre-configuration resolution chain.
+ * defers to the next. Without env configuration the pair is the built-in
+ * en+es and the configured default is English, byte-identical to the
+ * pre-configuration resolution chain.
  * @param {object} [input]
  * @param {{search?: string, href?: string}|null} [input.location] Location to read ?lang= from.
  * @param {object|null} [input.storage] Injected localStorage-like store; `undefined` uses the global.

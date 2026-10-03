@@ -170,8 +170,14 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+Shipped locales: en, es, fr, de, pt, it, ja, zh, ar. The fr, de, pt, it, ja,
+zh and ar catalogs were drafted by machine translation and need native-speaker
+review before they are treated as final; open a PR against the relevant
+`src/i18n/locales/<code>/` files to correct wording. Arabic is the only RTL
+locale (`LOCALE_METADATA.ar.dir`); the stock build offers every shipped locale
+in the dock switch unless `GEV_DEFAULT_LOCALE` / `GEV_SECONDARY_LOCALE` narrow it.
 
 ## Running the i18n test gates
 

@@ -307,3 +307,44 @@ body.recording-mode #cesium-credits {
     bottom: calc(50vh + 8px);
   }
 }
+
+/* Language switch: one compact segmented control, one button per offered
+   locale (rendered by applicationShell._initLocaleSelector). Logical
+   properties keep it correct under <html dir="rtl">. */
+#command-dock .dock-locale-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+#command-dock .dock-locale-btn {
+  min-width: 24px;
+  padding: 3px 5px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  line-height: 1;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+#command-dock .dock-locale-btn:hover,
+#command-dock .dock-locale-btn:focus-visible {
+  color: var(--text-primary);
+  border-color: var(--glass-border-hover);
+}
+
+#command-dock .dock-locale-btn.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: var(--accent-glow);
+}

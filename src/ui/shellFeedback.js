@@ -121,7 +121,6 @@ export class ShellFeedback {
     // the flap keeps textContent equal to the settled label throughout, so
     // this stays a no-op on the repeat ticks exactly as it did before.
     if (presentation.label)
-    if (presentation.label)
       setSplitFlapText(
         this._trafficSyncLabel,
         localizeStatusLabel(presentation.label),

@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+- Ship seven interface languages on the i18n foundation: French, German,
+  Portuguese, Italian, Japanese, Simplified Chinese and Arabic join English
+  and Spanish. Every catalog has strict key, placeholder and plural-shape
+  parity with English. Arabic selects all six CLDR plural categories and sets
+  `<html dir="rtl">`. The dock language switch now offers every shipped locale
+  by default and is styled; setting `GEV_DEFAULT_LOCALE` or
+  `GEV_SECONDARY_LOCALE` still restricts it to that pair.
+
+- Complete the Spanish catalog with the traffic-coverage and awareness-radius
+  strings added after it was written, and register the Anime and Snow cockpit
+  vision-style names in every catalog.
+
+- Update the transitive `dompurify` dependency to clear the advisory
+  GHSA-p98j-92pf-mc4p (`npm audit` reports no vulnerabilities).
+
 ## [0.2.1] — 2026-10-02 — God's Eye View through Your Agent (with security fixes and other features)
 
 - Ship each bundled data pack once. The region, marine, admin-boundary,
