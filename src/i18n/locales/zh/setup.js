@@ -71,8 +71,8 @@ export default {
   'keySetup.confirm.remove': '要从已保存的配置中移除此密钥吗？',
 
   'mapStack.fallbackName': '此地图组合',
-  'mapStack.unavailableReason': '{label}不可用',
-  'mapStack.unavailableAriaLabel': '{label}不可用：{hint}',
+  'mapStack.unavailableReason': '{label} 不可用',
+  'mapStack.unavailableAriaLabel': '{label} 不可用：{hint}',
 
   'scenes.recipe.flightsRadar': '全球航班雷达',
   'scenes.recipe.orbitalWatch': '轨道监视',

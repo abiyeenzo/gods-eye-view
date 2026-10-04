@@ -41,6 +41,7 @@ export default {
   'status.turningOffLiveData': 'LIVE-DATEN WERDEN AUSGESCHALTET',
   'status.refreshingLiveData': 'LIVE-DATEN WERDEN AKTUALISIERT',
 
+  'credits.closeAria': 'Datenquellenhinweis schließen',
   'locale.en.ariaLabel': 'Sprache wechseln: Englisch',
   'locale.es.ariaLabel': 'Sprache wechseln: Spanisch',
   'locale.fr.ariaLabel': 'Sprache wechseln: Französisch',
@@ -50,6 +51,4 @@ export default {
   'locale.ja.ariaLabel': 'Sprache wechseln: Japanisch',
   'locale.zh.ariaLabel': 'Sprache wechseln: Chinesisch',
   'locale.ar.ariaLabel': 'Sprache wechseln: Arabisch',
-
-  'credits.closeAria': 'Datenquellenhinweis schließen',
 };

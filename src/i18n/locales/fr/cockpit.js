@@ -39,7 +39,7 @@ export default {
     'Appliquer un étalonnage film noir monochrome à fort contraste.',
   'presets.styleNoirLabel': 'Noir',
   'presets.styleSnowTitle':
-    'Ajouter un effet de tempête de neige froide à la scène.',
+    'Ajouter un effet de voile blanc, froid et enneigé à la scène.',
   'presets.styleSnowLabel': 'Neige',
   'presets.mapSourceLabel': 'SOURCE CARTE',
   'presets.mapSourceChipsAriaLabel': 'Source de la carte',
@@ -351,16 +351,16 @@ export default {
 
   'status.acquiring': 'ACQUISITION',
   'status.subjectFallback': 'entité',
-  'status.sharedSubjectDetail': '{subject} PARTAGÉ',
+  'status.sharedSubjectDetail': 'PARTAGÉ : {subject}',
   'status.sharedFollowExpired': 'Le suivi partagé de {subject} a expiré',
   'status.sharedRestoreFailed':
-    'Impossible de restaurer {subject} partagé — flux indisponible',
-  'status.sharedUnavailable': '{subject} partagé est indisponible',
+    'Impossible de restaurer le suivi partagé de {subject} — flux indisponible',
+  'status.sharedUnavailable': 'Partage indisponible : {subject}',
 
   'context.modeContext': 'Contexte',
   'context.modeSpaceMissions': 'Missions spatiales',
   'context.toastStartBlocked':
-    "{mode} n'a pas pu démarrer : une autre couche ne s'est pas arrêtée proprement",
+    "Impossible de démarrer {mode} : une autre couche ne s'est pas arrêtée proprement",
   'context.toastTransitionFailedContacts':
     "Les contacts n'ont pas pu effectuer la transition demandée ; réessayez",
   'context.toastTransitionFailedMissions':
@@ -419,7 +419,7 @@ export default {
   'radio.stationFallback': 'station',
   'radio.playbackReadyFallback': 'Prêt',
 
-  'cctv.coverageViewshedOn': 'VIEWSHED ON',
+  'cctv.coverageViewshedOn': 'ZONE VISIBLE ON',
   'cctv.frameLoading': 'IMAGE · CHARGEMENT',
   'cctv.frameUnavailable': 'IMAGE · INDISPONIBLE',
   'cctv.calChipEdited': 'CAL · MODIFIÉE (NON ENREGISTRÉE)',

@@ -12,7 +12,7 @@ export default {
   'keySetup.apply': 'SALVA CHIAVI',
   'keySetup.status.saving': 'Salvataggio…',
   'firstRun.description':
-    'Sembra un cockpit proibito—poi capisci che le fonti sono pubbliche e i dati sono reali.',
+    'Sembra un cockpit proibito, poi capisci che le fonti sono pubbliche e i dati sono reali.',
   'firstRun.choice.contactsSub': 'Aerei, navi e intelligence nelle vicinanze',
   'firstRun.choice.spaceMissions': 'MISSIONI SPAZIALI',
   'firstRun.choice.spaceMissionsSub':
@@ -37,7 +37,7 @@ export default {
   'scenes.updateShot': 'AGGIORNA SCATTO',
   'scenes.start': 'AVVIA',
   'scenes.stop': 'FERMA',
-  'scenes.next': 'AVANTI',
+  'scenes.next': 'SUCC',
   'scenes.exportPresets': 'ESPORTA PRESET',
   'scenes.import': 'IMPORTA',
   'scenes.runLog': 'LOG ESECUZIONE',
@@ -49,11 +49,11 @@ export default {
   'firstRun.status.failed':
     'Impossibile aprire quella missione{detail}. Riprova o esplora a mano.',
   'firstRun.status.storageBlocked':
-    'Questo browser blocca l’archiviazione, quindi non è stato possibile salvare.',
+    "Questo browser blocca l'archiviazione, quindi non è stato possibile salvare.",
   'firstRun.choice.environmentalSub':
     'Terremoti e incendi attivi in tempo reale, da USGS e NASA',
   'firstRun.environmentalTitle.environmental': 'AMBIENTE',
-  'firstRun.environmentalTitle.earthWatch': 'OSSERVA TERRA',
+  'firstRun.environmentalTitle.earthWatch': 'OSSERVATORIO TERRA',
   'firstRun.environmentalTitle.activeEvents': 'EVENTI ATTIVI',
   'keySetup.chipWaiting': {
     one: 'POWER UP · {count} CHIAVE IN ATTESA',
@@ -64,9 +64,9 @@ export default {
   'keySetup.status.saveFailedDetail': 'Salvataggio non riuscito: {detail}',
   'keySetup.status.pasteFirst': 'Incolla prima almeno una chiave.',
   'keySetup.status.saved':
-    'Salvato in {store}. Riavvio in corso: questa pagina si ricarica da sola.',
+    'Salvato ({store}). Riavvio in corso: questa pagina si ricarica da sola.',
   'keySetup.status.removed':
-    'Rimosso da {store}. Riavvio in corso: questa pagina si ricarica da sola.',
+    'Rimosso ({store}). Riavvio in corso: questa pagina si ricarica da sola.',
   'keySetup.store.pinokio': 'la configurazione della tua app',
   'keySetup.store.env': 'il tuo .env locale',
   'keySetup.confirm.remove':
@@ -103,7 +103,7 @@ export default {
   'voice.error.trayTitle': 'ERRORE SISTEMA VOCALE',
   'voice.error.dismiss': 'CHIUDI',
   'voice.error.hint':
-    'Controlla il permesso del microfono e l’accesso alla rete, poi riprova.',
+    "Controlla il permesso del microfono e l'accesso alla rete, poi riprova.",
   'voice.kicker.agent': 'AGENTE IA',
   'voice.kicker.control': 'CONTROLLO VOCALE',
   'voice.tier.appliesNextSession': '{tier} si applica alla prossima sessione',
@@ -131,8 +131,7 @@ export default {
   'keySetup.row.remove': 'RIMUOVI',
   'keySetup.row.removeTitle':
     'Rimuovi {title} dalle chiavi salvate di questa app',
-  'keySetup.requirement':
-    'Richiede {envVars}: aggiungila nelle Impostazioni Provider',
+  'keySetup.requirement': 'Richiede {envVars}: vai su Impostazioni Provider',
   'keySetup.unlocks.google-maps':
     'Il pianeta 3D fotorealistico + ricerca luoghi',
   'keySetup.unlocks.google-maps-server':

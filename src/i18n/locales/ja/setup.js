@@ -13,7 +13,7 @@ export default {
   'keySetup.status.saving': '保存中…',
 
   'firstRun.description':
-    '禁断のコックピットのように感じられます—しかし、情報源はすべて公開されており、データは本物です。',
+    '禁断のコックピットのようですが、情報源はすべて公開されており、データは本物です。',
   'firstRun.choice.contactsSub': '航空機、船舶、周辺のインテリジェンス',
   'firstRun.choice.spaceMissions': '宇宙ミッション',
   'firstRun.choice.spaceMissionsSub': '打ち上げ、宇宙機、軌道の状況',
@@ -46,7 +46,7 @@ export default {
 
   'firstRun.busy.contacts': 'ライブコンタクトを開始中…',
   'firstRun.busy.spaceMissions': '宇宙ミッションを開いています…',
-  'firstRun.busy.environmental': 'アクティブなイベントをスキャン中…',
+  'firstRun.busy.environmental': '発生中のイベントをスキャン中…',
   'firstRun.busy.working': '処理中…',
   'firstRun.status.failed':
     'ミッションを開けませんでした{detail}。再試行するか、手動で探索してください。',
@@ -56,7 +56,7 @@ export default {
     'USGS と NASA による、地震と火災のライブ情報',
   'firstRun.environmentalTitle.environmental': '環境',
   'firstRun.environmentalTitle.earthWatch': '地球ウォッチ',
-  'firstRun.environmentalTitle.activeEvents': 'アクティブイベント',
+  'firstRun.environmentalTitle.activeEvents': '発生中のイベント',
 
   'keySetup.chipWaiting': {
     one: 'POWER UP · キー待機 {count}件',
@@ -86,7 +86,7 @@ export default {
 
   'voice.status.idle': 'オフ',
   'voice.status.connecting': '接続中',
-  'voice.status.listening': '聴取中',
+  'voice.status.listening': '聞き取り中',
   'voice.status.executing': '実行中',
   'voice.status.error': 'エラー',
   'voice.status.sessionCostCap': 'セッション終了: コスト上限 {cost}',

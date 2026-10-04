@@ -35,10 +35,11 @@ export default {
   'loading.status.systems': 'Inicializando sistemas...',
   'status.liveDataOff': 'DADOS AO VIVO DESLIGADOS',
   'status.mappedSitesLoaded': 'LOCAIS MAPEADOS CARREGADOS',
-  'status.retryingMappedSites': 'TENTANDO NOVAMENTE LOCAIS MAPEADOS',
+  'status.retryingMappedSites': 'REPETINDO BUSCA DE LOCAIS MAPEADOS',
   'status.fetchingMappedSites': 'BUSCANDO LOCAIS MAPEADOS',
   'status.turningOffLiveData': 'DESLIGANDO DADOS AO VIVO',
   'status.refreshingLiveData': 'ATUALIZANDO DADOS AO VIVO',
+  'credits.closeAria': 'Fechar atribuição de dados',
   'locale.en.ariaLabel': 'Mudar idioma: inglês',
   'locale.es.ariaLabel': 'Mudar idioma: espanhol',
   'locale.fr.ariaLabel': 'Mudar idioma: francês',
@@ -48,5 +49,4 @@ export default {
   'locale.ja.ariaLabel': 'Mudar idioma: japonês',
   'locale.zh.ariaLabel': 'Mudar idioma: chinês',
   'locale.ar.ariaLabel': 'Mudar idioma: árabe',
-  'credits.closeAria': 'Fechar atribuição de dados',
 };
