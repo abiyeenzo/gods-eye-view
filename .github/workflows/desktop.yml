@@ -63,6 +63,10 @@ jobs:
         working-directory: desktop
         run: npm run stage
 
+      - name: Smoke-test the staged server
+        working-directory: desktop
+        run: node scripts/smoke.mjs
+
       - name: Package
         working-directory: desktop
         env:
