@@ -170,8 +170,13 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### Portuguese (pt)
+
+The Portuguese catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/pt/`. The draft leans toward Brazilian Portuguese while avoiding terms that are unusual in Portugal. Conventions used so far: tactical labels stay ALL-CAPS and abbreviated where panels are fixed-width, instrument codes and units are untouched, and POWER UP is rendered ATIVAR.
 
 ## Running the i18n test gates
 

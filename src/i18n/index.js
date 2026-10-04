@@ -26,9 +26,14 @@ import * as enShell from './locales/en/shell.js';
 import * as enCockpit from './locales/en/cockpit.js';
 import * as enLayers from './locales/en/layers.js';
 import * as enSetup from './locales/en/setup.js';
+import * as ptShell from './locales/pt/shell.js';
+import * as ptCockpit from './locales/pt/cockpit.js';
+import * as ptLayers from './locales/pt/layers.js';
+import * as ptSetup from './locales/pt/setup.js';
 
 // Append new namespace modules here (one import + one entry per locale).
 const EN_NAMESPACES = [enShell, enCockpit, enLayers, enSetup];
+const PT_NAMESPACES = [ptShell, ptCockpit, ptLayers, ptSetup];
 
 /**
  * Prefix one namespace module's flat, namespace-relative keys with its
@@ -72,6 +77,7 @@ function buildCatalog(namespaceModules) {
 
 const CATALOGS = Object.freeze({
   [DEFAULT_LOCALE]: buildCatalog(EN_NAMESPACES),
+  pt: buildCatalog(PT_NAMESPACES),
 });
 
 /**

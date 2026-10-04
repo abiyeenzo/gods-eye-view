@@ -193,6 +193,14 @@ test('t() selects one/other plural variants through Intl.PluralRules', () => {
   // through the synthetic missing-category fallback under 'ru'.
 });
 
+test('Portuguese plural agreement and selector label resolve through the real pt catalog', () => {
+  pinLocale('pt');
+  assert.equal(t('layers.clear.toast.cleared', { count: 1 }), '1 camada de dados limpa');
+  assert.equal(t('layers.clear.toast.cleared', { count: 3 }), '3 camadas de dados limpas');
+  assert.equal(t('shell.locale.pt.ariaLabel'), 'Mudar idioma: português');
+  pinLocale('en');
+});
+
 test('a missing key returns the key itself and never warns outside dev builds', () => {
   pinLocale('en');
   const warnings = [];
@@ -354,8 +362,8 @@ test('applyDocumentTranslations writes all four attributes and skips unknown key
 });
 
 test('getCatalog exposes the merged, dot-prefixed registry for every shipped locale', () => {
-  assert.deepEqual([...CATALOG_LOCALES], ['en'],
-    'the foundation ships English only; each locale PR appends its code here');
+  assert.deepEqual([...CATALOG_LOCALES], ['en', 'pt'],
+    'English plus Portuguese; each further locale PR appends its code here');
   for (const locale of CATALOG_LOCALES) {
     const catalog = getCatalog(locale);
     assert.ok(catalog, `catalog for ${locale}`);
@@ -375,16 +383,17 @@ test('getCatalog exposes the merged, dot-prefixed registry for every shipped loc
   assert.equal(getLocale(), 'en', 'state survived the whole file');
 });
 
-test('locale pair: built-in and configured pairs degrade to en-only while only English ships', () => {
-  // English is the only shipped catalog, so the offered set is ['en'] under
-  // any configuration — a pair naming anything else names an unshipped
-  // locale. The dedup-ordering pin (default, secondary, then en as the
-  // always-shipped fallback) returns with the first secondary-locale PR.
+test('locale pair: the built-in pair is en-only; a configured pair may name any shipped locale', () => {
+  // Shipping (CATALOG_LOCALES) is separate from offering: the unconfigured
+  // build still offers English only, and a pair naming a shipped locale is
+  // honoured in selector order (default, secondary, then en if absent).
   assert.deepEqual([...availableLocales()], ['en'], 'no config = built-in en-only pair');
-  assert.deepEqual([...availableLocales({ defaultLocale: 'fr', secondaryLocale: 'en' })], ['en'],
-    'fr has no shipped catalog: the pair degenerates');
+  assert.deepEqual([...availableLocales({ defaultLocale: 'pt', secondaryLocale: 'en' })], ['pt', 'en']);
+  assert.deepEqual([...availableLocales({ defaultLocale: 'en', secondaryLocale: 'pt' })], ['en', 'pt']);
+  assert.deepEqual([...availableLocales({ defaultLocale: 'ru', secondaryLocale: 'en' })], ['en'],
+    'ru normalizes but has no shipped catalog: the pair degenerates');
   // Regional spellings still normalize before validation.
-  assert.deepEqual([...availableLocales({ defaultLocale: 'FR-fr', secondaryLocale: 'EN' })], ['en']);
+  assert.deepEqual([...availableLocales({ defaultLocale: 'PT-pt', secondaryLocale: 'EN' })], ['pt', 'en']);
   // A blank field means "unset" (empty .env line) and takes its built-in default.
   assert.deepEqual([...availableLocales({ defaultLocale: ' ' })], ['en']);
   const pair = resolveLocalePair();
@@ -393,28 +402,29 @@ test('locale pair: built-in and configured pairs degrade to en-only while only E
   assert.ok(Object.isFrozen(pair) && Object.isFrozen(pair.availableLocales));
 });
 
-test('locale pair: a configured pair naming an unshipped locale degrades to English resolution', () => {
-  const config = { defaultLocale: 'fr', secondaryLocale: 'en' };
-  // fr normalizes but has no shipped catalog: the pair is unusable, the
-  // built-in en-only pair applies, and every resolution step yields English.
-  assert.equal(resolveLocale({ location: { search: '' }, storage: null, languages: null, config }), 'en');
-  assert.equal(resolveLocale({ location: { search: '?lang=fr' }, storage: { getItem: () => 'fr' }, languages: null, config }), 'en');
-  assert.equal(resolveLocale({ location: { search: '' }, storage: { getItem: () => 'fr' }, languages: ['fr-FR'], config }), 'en');
-  assert.equal(resolveLocale({ location: { search: '?lang=en' }, storage: { getItem: () => 'en' }, languages: null, config }), 'en');
+test('locale pair: a configured pt/en pair reshapes resolution; an unshipped one degrades to English', () => {
+  const config = { defaultLocale: 'pt', secondaryLocale: 'en' };
+  assert.equal(resolveLocale({ location: { search: '' }, storage: null, languages: null, config }), 'pt');
+  assert.equal(resolveLocale({ location: { search: '?lang=en' }, storage: { getItem: () => 'pt' }, languages: null, config }), 'en');
+  assert.equal(resolveLocale({ location: { search: '' }, storage: null, languages: ['pt-XX', 'en'], config }), 'pt');
+  const unshipped = { defaultLocale: 'ru', secondaryLocale: 'en' };
+  assert.equal(resolveLocale({ location: { search: '' }, storage: null, languages: null, config: unshipped }), 'en');
+  assert.equal(resolveLocale({ location: { search: '?lang=ru' }, storage: { getItem: () => 'ru' }, languages: null, config: unshipped }), 'en');
+  assert.equal(resolveLocale({ location: { search: '' }, storage: { getItem: () => 'ru' }, languages: ['ru-RU'], config: unshipped }), 'en');
 });
 
-test('locale pair: ?lang= cannot offer a locale without a shipped catalog', () => {
+test('locale pair: ?lang= cannot offer a locale outside the offered pair or without a shipped catalog', () => {
   assert.equal(
-    resolveLocale({ location: { search: '?lang=fr' }, storage: { getItem: () => 'en' }, languages: null }),
+    resolveLocale({ location: { search: '?lang=pt' }, storage: { getItem: () => 'en' }, languages: null }),
     'en',
-    'fr has no catalog: the override falls through to the stored preference',
+    'pt ships but the built-in pair is en-only: the override falls through to the stored preference',
   );
   assert.equal(
     resolveLocale({
       location: { search: '?lang=es' },
       storage: { getItem: () => 'en' },
       languages: null,
-      config: { defaultLocale: 'es', secondaryLocale: 'fr' },
+      config: { defaultLocale: 'es', secondaryLocale: 'pt' },
     }),
     'en',
     'a configured pair cannot smuggle an unshipped locale into the offered set',
@@ -422,9 +432,10 @@ test('locale pair: ?lang= cannot offer a locale without a shipped catalog', () =
 });
 
 test('locale pair: a stored preference outside the offered pair falls through', () => {
-  // A stored 'fr'/'es' reads as absent while those locales are unshipped;
-  // resolution defers to the navigator list and finally the built-in default.
-  assert.equal(resolveLocale({ location: { search: '' }, storage: { getItem: () => 'fr' }, languages: ['en-US'] }), 'en');
+  // A stored 'pt' reads as absent while the built-in pair does not offer
+  // it and a stored 'es' while es is unshipped; resolution defers to the
+  // navigator list and finally the built-in default.
+  assert.equal(resolveLocale({ location: { search: '' }, storage: { getItem: () => 'pt' }, languages: ['en-US'] }), 'en');
   assert.equal(resolveLocale({ location: { search: '' }, storage: { getItem: () => 'es' }, languages: null }), 'en',
     '…down to the default');
 });
