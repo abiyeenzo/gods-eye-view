@@ -170,8 +170,13 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### Chinese (zh)
+
+The Chinese catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/zh/`. This is Simplified Chinese (zh-CN conventions). Latin acronyms and codes (ADS-B, AIS, CCTV, GPS) stay as written and units are untouched. Chinese has a single plural category, so the one and other variants carry the same text.
 
 ## Running the i18n test gates
 
