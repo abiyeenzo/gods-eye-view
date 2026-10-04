@@ -170,8 +170,16 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### French (fr)
+
+The French catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/fr/`. Conventions used so far: tactical labels stay
+ALL-CAPS and abbreviated where panels are fixed-width (PRÉC., SUIV., SUPPR.),
+the formal register is avoided in favor of infinitives and noun phrases,
+instrument codes and units are untouched, and `POWER UP` stays a brand label.
 
 ## Running the i18n test gates
 

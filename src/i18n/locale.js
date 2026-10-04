@@ -22,7 +22,7 @@ export const LOCALE_STORAGE_KEY = 'gev:locale:v1';
  * the UI and accepted during resolution. A locale PR appends its code here
  * alongside its catalogs (docs/TRANSLATORS.md) — nothing else flips shipping.
  */
-export const CATALOG_LOCALES = Object.freeze(['en']);
+export const CATALOG_LOCALES = Object.freeze(['en', 'fr']);
 
 /**
  * Locale codes normalizeLocale folds regional variants for. Kept ahead of
