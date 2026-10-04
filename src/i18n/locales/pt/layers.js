@@ -152,7 +152,7 @@ export default {
   'vessel.posAt': 'POS: {time}Z',
   'vessel.hudIdle': 'AIS: --',
   'vessel.hudName': 'AIS: {name}',
-  'vessel.hudTypeLine': '{type}  VEL: {speed}  RUM: {heading}',
+  'vessel.hudTypeLine': '{type}  VEL: {speed}  HDG: {heading}',
   'vessel.awaitingFirstPosition': 'aguardando primeira posição AIS…',
   'cctv.toggleOn': 'CCTV LIGADO',
   'cctv.coverageOn': 'COBERTURA LIGADA',
@@ -230,7 +230,7 @@ export default {
   'radio.state.loading': 'Conectando direto à emissora…',
   'radio.state.buffering': 'Armazenando em buffer o stream da emissora…',
   'radio.state.playing': 'Reproduzindo {station}',
-  'radio.state.paused': 'Pausado {station}',
+  'radio.state.paused': 'Pausado: {station}',
   'radio.state.error': 'Stream da emissora indisponível',
   'radio.state.degradedDirectory': ' · diretório degradado',
   'radio.state.staleDirectory': ' · diretório desatualizado',
@@ -387,12 +387,12 @@ export default {
   'installations.loading': 'carregando contexto da instalação mapeada',
   'installations.feedback.reason.rateLimited':
     'Overpass com limite de requisições',
-  'installations.feedback.reason.timeout': 'Overpass esgotou o tempo',
+  'installations.feedback.reason.timeout': 'Tempo esgotado no Overpass',
   'installations.feedback.reason.queryFailed':
     'Overpass não conseguiu concluir a consulta',
   'installations.feedback.reason.unavailable':
     'Overpass temporariamente indisponível',
-  'installations.feedback.retrying': 'Tentando novamente locais mapeados…',
+  'installations.feedback.retrying': 'Repetindo busca de locais mapeados…',
   'installations.feedback.fetching': 'Buscando locais mapeados…',
   'installations.feedback.retryIn': '{reason} — nova tentativa em {seconds}s',
   'installations.feedback.retryPending': '{reason} — nova tentativa pendente',
@@ -435,7 +435,7 @@ export default {
   'awareness.reason.none':
     'nenhum objeto observado ou mapeado nos feeds atuais',
   'weather.conditionsUnknown': 'CONDIÇÕES DESCONHECIDAS',
-  'weather.clear': 'LIMPO',
+  'weather.clear': 'CÉU LIMPO',
   'weather.partlyCloudy': 'PARCIALMENTE NUBLADO',
   'weather.overcast': 'ENCOBERTO',
   'weather.fog': 'NEBLINA',

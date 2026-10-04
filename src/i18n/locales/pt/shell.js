@@ -35,7 +35,7 @@ export default {
   'loading.status.systems': 'Inicializando sistemas...',
   'status.liveDataOff': 'DADOS AO VIVO DESLIGADOS',
   'status.mappedSitesLoaded': 'LOCAIS MAPEADOS CARREGADOS',
-  'status.retryingMappedSites': 'TENTANDO NOVAMENTE LOCAIS MAPEADOS',
+  'status.retryingMappedSites': 'REPETINDO BUSCA DE LOCAIS MAPEADOS',
   'status.fetchingMappedSites': 'BUSCANDO LOCAIS MAPEADOS',
   'status.turningOffLiveData': 'DESLIGANDO DADOS AO VIVO',
   'status.refreshingLiveData': 'ATUALIZANDO DADOS AO VIVO',
