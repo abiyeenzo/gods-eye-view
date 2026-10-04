@@ -76,6 +76,15 @@
   keeps frame time with ALPR on within a few percent of ALPR off, seats nearby
   badges on the rendered surface and says when no loaded camera is on screen.
 
+## Japanese locale
+
+- Ship the Japanese catalog on the i18n foundation: four namespace catalogs
+  key-for-key with en, registered in `CATALOG_LOCALES` and available through
+  `GEV_DEFAULT_LOCALE` / `GEV_SECONDARY_LOCALE` (`ja`). The built-in pair
+  is unchanged. Japanese plural agreement is pinned through the real catalog.
+  The strings are a machine-assisted first draft and want a native-speaker
+  review.
+
 ## Internationalization foundation
 
 - Add the locale core (`src/i18n/`): configurable locale pair

@@ -26,9 +26,14 @@ import * as enShell from './locales/en/shell.js';
 import * as enCockpit from './locales/en/cockpit.js';
 import * as enLayers from './locales/en/layers.js';
 import * as enSetup from './locales/en/setup.js';
+import * as jaShell from './locales/ja/shell.js';
+import * as jaCockpit from './locales/ja/cockpit.js';
+import * as jaLayers from './locales/ja/layers.js';
+import * as jaSetup from './locales/ja/setup.js';
 
 // Append new namespace modules here (one import + one entry per locale).
 const EN_NAMESPACES = [enShell, enCockpit, enLayers, enSetup];
+const JA_NAMESPACES = [jaShell, jaCockpit, jaLayers, jaSetup];
 
 /**
  * Prefix one namespace module's flat, namespace-relative keys with its
@@ -72,6 +77,7 @@ function buildCatalog(namespaceModules) {
 
 const CATALOGS = Object.freeze({
   [DEFAULT_LOCALE]: buildCatalog(EN_NAMESPACES),
+  ja: buildCatalog(JA_NAMESPACES),
 });
 
 /**

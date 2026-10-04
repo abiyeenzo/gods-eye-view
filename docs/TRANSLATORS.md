@@ -170,8 +170,13 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### Japanese (ja)
+
+The Japanese catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/ja/`. Conventions used so far: Latin acronyms and codes (ADS-B, AIS, CCTV, GPS) stay as written, labels use noun forms, full sentences use the polite form, loanwords use katakana, and POWER UP stays a brand label. Japanese has a single plural category, so the one and other variants carry the same text.
 
 ## Running the i18n test gates
 
