@@ -104,9 +104,9 @@ const localeKeys = new Map(
 );
 
 test('every shipped locale ships a merged catalog', () => {
-  // English only in the foundation state; a locale PR appends its code here
-  // alongside its catalog files (docs/TRANSLATORS.md).
-  assert.deepEqual([...CATALOG_LOCALES].sort(), ['en']);
+  // en + it; a further locale PR appends its code here alongside its
+  // catalog files (docs/TRANSLATORS.md).
+  assert.deepEqual([...CATALOG_LOCALES].sort(), ['en',  'it']);
   for (const locale of CATALOG_LOCALES) {
     assert.ok(getCatalog(locale), `merged catalog for ${locale}`);
   }

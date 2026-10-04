@@ -170,8 +170,13 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### Italian (it)
+
+The Italian catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/it/`. Conventions used so far: tactical labels stay ALL-CAPS and abbreviated where panels are fixed-width (PREC, SUCC, ELIM), instrument codes and units are untouched, radio genre names stay in English, and POWER UP stays a brand label.
 
 ## Running the i18n test gates
 

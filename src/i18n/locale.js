@@ -22,7 +22,7 @@ export const LOCALE_STORAGE_KEY = 'gev:locale:v1';
  * the UI and accepted during resolution. A locale PR appends its code here
  * alongside its catalogs (docs/TRANSLATORS.md) — nothing else flips shipping.
  */
-export const CATALOG_LOCALES = Object.freeze(['en']);
+export const CATALOG_LOCALES = Object.freeze(['en', 'it']);
 
 /**
  * Locale codes normalizeLocale folds regional variants for. Kept ahead of
@@ -31,7 +31,14 @@ export const CATALOG_LOCALES = Object.freeze(['en']);
  * edits only CATALOG_LOCALES plus its catalog files, and a code listed here
  * without a catalog normalizes but is never offerable or resolvable.
  */
-const NORMALIZABLE_LOCALES = Object.freeze(['en', 'es', 'fr', 'ru', 'uk']);
+const NORMALIZABLE_LOCALES = Object.freeze([
+  'en',
+  'es',
+  'fr',
+  'ru',
+  'uk',
+  'it',
+]);
 
 /** Fallback catalog locale and no-config default: always English. */
 export const DEFAULT_LOCALE = 'en';
@@ -54,6 +61,7 @@ export const LOCALE_METADATA = Object.freeze({
   fr: Object.freeze({ dir: 'ltr' }),
   ru: Object.freeze({ dir: 'ltr' }),
   uk: Object.freeze({ dir: 'ltr' }),
+  it: Object.freeze({ dir: 'ltr' }),
 });
 
 /**
@@ -64,7 +72,7 @@ export const LOCALE_METADATA = Object.freeze({
  * shipping: offering/resolving a locale additionally requires a catalog
  * (CATALOG_LOCALES) — see resolveLocalePair.
  * @param {*} candidate Raw locale tag (?lang= value, stored value, navigator entry).
- * @returns {'en'|'es'|'fr'|'ru'|'uk'|null}
+ * @returns {'en'|'es'|'fr'|'ru'|'uk'|'it'|null}
  */
 export function normalizeLocale(candidate) {
   if (typeof candidate !== 'string') return null;
