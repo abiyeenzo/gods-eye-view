@@ -14,7 +14,7 @@ export default {
     one: '{count} livello dati non è stato disattivato',
     other: '{count} livelli dati non sono stati disattivati',
   },
-  'overlay.regionAriaLabel': 'Bersagli mappa visibili',
+  'overlay.regionAriaLabel': 'Obiettivi mappa visibili',
   'cctv.panelTitle': 'CCTV',
   'cctv.collapseTitle': 'Comprimi pannello',
   'cctv.sourceUnknown': 'FONTE · SCONOSCIUTA',
@@ -29,9 +29,9 @@ export default {
   'cctv.autoHopOff': 'AUTO HOP OFF',
   'cctv.projectionOn': 'PROIEZIONE ON',
   'cctv.calibrationLabel': 'CALIBRAZIONE',
-  'cctv.adjustLabel': 'REGOLA',
+  'cctv.adjustLabel': 'REGOLAZ.',
   'cctv.adjustTitle':
-    'Trascina la telecamera nel mondo: gli anelli ruotano, le frecce spostano, le maniglie impostano portata/FOV',
+    'Trascina la telecamera nel mondo: gli anelli ruotano, le frecce spostano, i punti di controllo impostano portata/FOV',
   'cctv.calPoseAriaLabel':
     'Posa della telecamera — clic su un valore per digitare',
   'cctv.calHeadingTitle': 'Direzione (bussola °) — clic per digitare',
@@ -60,10 +60,10 @@ export default {
   'radio.filterAll': 'Tutte',
   'radio.noStation': 'NESSUNA STAZIONE SELEZIONATA',
   'radio.stationHint':
-    'Attiva la Radio, poi scegli un marcatore sul globo o usa avanti.',
+    'Attiva la Radio, poi scegli un marcatore sul globo o usa SUCC.',
   'radio.bandLabel': 'BANDA ELENCO',
   'radio.dragToTune': 'TRASCINA PER SINTONIZZARE',
-  'radio.tunerIdle': 'TUTTE · TRASCINA L’AGO',
+  'radio.tunerIdle': "TUTTE · TRASCINA L'AGO",
   'radio.snapsNote': 'SI AGGANCIA ALLE STAZIONI DISPONIBILI',
   'radio.transportAriaLabel': 'Riproduzione radio',
   'radio.prev': 'PREC',
@@ -79,7 +79,7 @@ export default {
   'radio.playbackOff': 'Radio spenta',
   'radio.stationSite': 'SITO STAZIONE',
   'radio.privacyNote':
-    'L’audio si collega direttamente all’emittente dopo aver premuto play. Il tuo IP è visibile a quell’emittente.',
+    "L'audio si collega direttamente all'emittente dopo aver premuto play. Il tuo IP è visibile a quell'emittente.",
   'status.on': 'ON',
   'status.loading': 'CARICAMENTO',
   'status.degraded': 'DEGRADATO',
@@ -113,7 +113,8 @@ export default {
   'meta.uncertainLifecycle':
     'INCERTO · {source} · lo stato del ciclo di vita richiede riconciliazione',
   'meta.transitioning': '{state} · {source}',
-  'meta.stateSourceRetry': '{state} · {source} · {detail} · riprova {seconds}s',
+  'meta.stateSourceRetry':
+    '{state} · {source} · {detail} · nuovo tentativo tra {seconds}s',
   'meta.stateSourceDetail': '{state} · {source} · {detail}',
   'meta.stateSourceAgo': '{state} · {source} · {ago}',
   'meta.stateSourceAgoRetry':
@@ -135,7 +136,7 @@ export default {
   'vessel.type.military': 'MILITARE',
   'vessel.type.sailing': 'VELA',
   'vessel.type.pleasure': 'DIPORTO',
-  'vessel.type.pilot': 'PILOTA',
+  'vessel.type.pilot': 'PILOTINA',
   'vessel.type.sar': 'SAR',
   'vessel.type.tug': 'REBOCCATORE',
   'vessel.type.portTender': 'TENDER PORTO',
@@ -158,7 +159,7 @@ export default {
   'cctv.coverageOn': 'COPERTURA ON',
   'cctv.autoHopOn': 'AUTO HOP ON',
   'cctv.projectionOff': 'PROIEZIONE OFF',
-  'cctv.adjustOn': 'REGOLA ON',
+  'cctv.adjustOn': 'REGOLAZ. ON',
   'cctv.summary.standingBy':
     '{count} TELECAMERE IN ATTESA · NESSUNA TELECAMERA SELEZIONATA · CLIC SU UNA TELECAMERA PER ATTIVARLA',
   'cctv.summary.empty': 'Nessuna telecamera disponibile nel catalogo.',
@@ -212,7 +213,7 @@ export default {
   'radio.cluster.talk': 'TALK',
   'radio.cluster.weather': 'METEO',
   'radio.cluster.publicSafety': 'SICUREZZA',
-  'radio.cluster.aviationMarine': 'AIR / SEA',
+  'radio.cluster.aviationMarine': 'AERO / MARE',
   'radio.cluster.trafficTransit': 'TRASPORTI',
   'radio.cluster.music': 'MUSICA',
   'radio.cluster.other': 'ALTRO',
@@ -222,28 +223,28 @@ export default {
   'radio.enableAria': 'Attiva la Radio',
   'radio.disableAria': 'Disattiva la Radio',
   'radio.reconcileAria': 'Riconcilia la Radio — ciclo di vita incerto',
-  'radio.meta.loading': 'Caricamento dell’elenco stazioni…',
-  'radio.meta.metadataOnly': 'Solo metadati dell’elenco',
-  'radio.meta.chooseHint': 'Scegli un marcatore sul globo o usa avanti.',
+  'radio.meta.loading': "Caricamento dell'elenco stazioni…",
+  'radio.meta.metadataOnly': "Solo metadati dell'elenco",
+  'radio.meta.chooseHint': 'Scegli un marcatore sul globo o usa SUCC.',
   'radio.tags': 'TAG · {tags}',
-  'radio.state.ready': 'Pronto — la riproduzione parte solo su tua azione',
-  'radio.state.loading': 'Connessione diretta all’emittente…',
-  'radio.state.buffering': 'Buffering del flusso dell’emittente…',
+  'radio.state.ready': 'Pronta — la riproduzione parte solo su tua azione',
+  'radio.state.loading': "Connessione diretta all'emittente…",
+  'radio.state.buffering': "Buffering del flusso dell'emittente…",
   'radio.state.playing': 'In riproduzione: {station}',
   'radio.state.paused': 'In pausa: {station}',
-  'radio.state.error': 'Flusso dell’emittente non disponibile',
+  'radio.state.error': "Flusso dell'emittente non disponibile",
   'radio.state.degradedDirectory': ' · elenco degradato',
   'radio.state.staleDirectory': ' · elenco obsoleto',
   'radio.state.staleDegradedDirectory': ' · elenco obsoleto/degradato',
   'radio.state.outsideFilter': ' · fuori dal filtro attuale',
-  'radio.state.voiceMuted': ' · silenziata durante l’interazione vocale',
+  'radio.state.voiceMuted': " · silenziata durante l'interazione vocale",
   'radio.state.voiceRestoring': ' · ripristino del volume dopo la voce',
   'radio.state.staticNoAudio':
-    ' · il rumore indica assenza di audio dall’emittente',
+    " · il rumore indica assenza di audio dall'emittente",
   'radio.state.tuningStatic':
-    ' · rumore di sintonia fino all’avvio dell’emittente',
+    " · rumore di sintonia fino all'avvio dell'emittente",
   'radio.state.stationUnavailable':
-    'Stazione non disponibile dopo l’aggiornamento dell’elenco — scegli un altro canale',
+    "Stazione non disponibile dopo l'aggiornamento dell'elenco — scegli un altro canale",
   'radio.state.enabling': 'Attivazione della Radio…',
   'radio.state.disabling': 'Disattivazione della Radio…',
   'radio.state.uncertain':
@@ -315,18 +316,18 @@ export default {
   'missions.replay.phasePreparing': 'Preparazione del sito di lancio',
   'missions.replay.phaseLiftoff': 'Decollo',
   'missions.replay.phaseAscent': 'Replay della salita',
-  'missions.replay.phaseOrbit': 'Replay dell’orbita',
+  'missions.replay.phaseOrbit': "Replay dell'orbita",
   'missions.replay.pausedSuffix': ', in pausa',
   'satellites.denseChip': 'DENSO',
   'satellites.denseChipLoading': 'DENSO ···',
   'satellites.denseChipFailed': 'DENSO ✕',
   'satellites.denseTitleAdd':
-    'Aggiungi l’intero shell broadband Starlink (migliaia di punti in più)',
+    "Aggiungi l'intero shell broadband Starlink (migliaia di punti in più)",
   'satellites.denseTitleLoading': 'Caricamento dello shell Starlink…',
   'satellites.denseTitleFailed': 'Starlink {detail} — clic per riprovare',
   'satellites.loadFailed': 'caricamento non riuscito',
   'satellites.denseTitleActive':
-    'Mostra l’intero shell Starlink — clic per il solo catalogo principale',
+    "Mostra l'intero shell Starlink — clic per il solo catalogo principale",
   'satellites.class.station': 'STAZIONE',
   'satellites.class.stationBlurb':
     'Stazioni con equipaggio e veicoli in visita',
@@ -334,7 +335,7 @@ export default {
   'satellites.class.navBlurb': 'Navigazione GNSS — GPS, GLONASS, Galileo',
   'satellites.class.geo': 'GEO',
   'satellites.class.geoBlurb':
-    'Fascia geostazionaria — comunicazioni e meteo, fissi sopra l’equatore',
+    "Fascia geostazionaria — comunicazioni e meteo, fissi sopra l'equatore",
   'satellites.class.visual': 'VISIVO',
   'satellites.class.visualBlurb':
     'Oggetti più luminosi a occhio nudo — gruppo visual di CelesTrak',
@@ -385,7 +386,7 @@ export default {
   'bike.stationWithId': 'Stazione {id}',
   'installations.fallbackTitle': 'INSTALLAZIONE MAPPATA',
   'installations.loading':
-    'caricamento del contesto dell’installazione mappata',
+    "caricamento del contesto dell'installazione mappata",
   'installations.feedback.reason.rateLimited':
     'Overpass ha limitato le richieste',
   'installations.feedback.reason.timeout': 'Overpass è andato in timeout',
@@ -406,7 +407,7 @@ export default {
   'awareness.standbyReady': 'CONTESTO PRONTO',
   'awareness.standbyOff': 'CONTESTO GLOBALE OFF',
   'awareness.standbySelect':
-    'SELEZIONA UN VOLO, UNA NAVE O UN’INSTALLAZIONE MAPPATA',
+    "SELEZIONA UN VOLO, UNA NAVE O UN'INSTALLAZIONE MAPPATA",
   'awareness.standbyEnable':
     'ATTIVA PER CARICARE LA PROSSIMITÀ OSSERVATA / MAPPATA',
   'awareness.controlsAria': 'Navigazione Contesto globale',

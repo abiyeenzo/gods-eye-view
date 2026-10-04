@@ -2,7 +2,7 @@
 export const NAMESPACE = 'cockpit';
 
 export default {
-  'hud.sectionLabel': 'Vista cockpit dell’aereo',
+  'hud.sectionLabel': "Vista cockpit dell'aereo",
   'exit.label': 'ESCI DAL COCKPIT',
   'readout.groundSpeed': 'VEL. AL SUOLO',
   'readout.altitude': 'ALTITUDINE',
@@ -34,7 +34,7 @@ export default {
     'Applica colori vivaci cel-shaded e contorni illustrati.',
   'presets.styleAnimeLabel': 'Anime',
   'presets.styleNoirTitle':
-    'Applica una grading noir monocromatica ad alto contrasto.',
+    'Applica un color grading noir monocromatico ad alto contrasto.',
   'presets.styleNoirLabel': 'Noir',
   'presets.styleSnowTitle':
     'Aggiunge alla scena un effetto freddo di nevicata e whiteout.',
@@ -62,11 +62,11 @@ export default {
   'display.fadeLabel': 'Dissolv.',
   'display.fadeAriaLabel': 'Distanza di dissolvenza del rilevamento',
   'display.fadeTitle':
-    'Distanza di dissolvenza dell’overlay fuori dal foro, come percentuale del suo raggio',
+    "Distanza di dissolvenza dell'overlay fuori dal foro, come percentuale del suo raggio",
   'display.outsideLabel': 'Esterno',
   'display.outsideAriaLabel': 'Opacità del rilevamento fuori dal foro',
   'display.outsideTitle':
-    'Opacità di etichette e schede dell’overlay oltre la distanza di dissolvenza',
+    "Opacità di etichette e schede dell'overlay oltre la distanza di dissolvenza",
   'display.parametersTitle': 'PARAMETRI',
   'display.parametersCollapseTitle': 'Comprimi pannello',
   'display.modelsToggleTitle':
@@ -82,7 +82,7 @@ export default {
     'Sfumatura del bordo dello scope, come percentuale del raggio del foro',
   'display.celestialToggleTitle': 'Anello celeste — mostra il globo intero',
   'display.celestialLabel': 'Celeste',
-  'display.cleanViewToggleTitle': 'Nascondi l’interfaccia',
+  'display.cleanViewToggleTitle': "Nascondi l'interfaccia",
   'display.cleanViewLabel': 'UI pulita',
   'display.bloomToggleTitle': 'Bloom / Bagliore',
   'display.bloomLabel': 'Bloom',
@@ -90,8 +90,8 @@ export default {
   'display.sharpenLabel': 'Nitidezza',
   'location.toolbarLabel': 'POSIZIONE',
   'location.collapseTitle': 'Comprimi pannello',
-  'location.pinAriaLabel': 'Fissa il vassoio posizione',
-  'location.pinTitle': 'Mantieni aperto il vassoio posizione',
+  'location.pinAriaLabel': 'Fissa il pannello posizione',
+  'location.pinTitle': 'Mantieni aperto il pannello posizione',
   'location.miniCityInitial': '📍 Posizione: --',
   'location.miniPoiInitial': 'Punto di interesse: --',
   'location.searchToggleTitle': 'Cerca un luogo qualsiasi',
@@ -104,15 +104,15 @@ export default {
   'hud.firstPerson': 'PRIMA PERSONA',
   'hud.aircraftMetaInitial': 'TRACCIA LIVE · ROTTA ALLINEATA',
   'hud.visionGroupAriaLabel': 'Stile di visione del cockpit',
-  'hud.compassAriaLabel': 'Prua attuale dell’aereo',
+  'hud.compassAriaLabel': "Prua attuale dell'aereo",
   'readout.rimGroundSpeed': 'VEL. AL SUOLO · KTS',
   'readout.rimAltitude': 'ALTITUDINE · FT',
   'vision.previousLabel': 'PREC',
   'vision.previousAriaLabel': 'Stile di visione del cockpit precedente',
   'vision.previousTitle': 'Stile di visione precedente',
   'vision.currentAriaLabel':
-    'Stile di visione del cockpit attuale: NORMAL. Attiva per lo stile successivo.',
-  'vision.currentTitle': 'Stile attuale: NORMAL — clic per il successivo',
+    'Stile di visione del cockpit attuale: NORMALE. Attiva per lo stile successivo.',
+  'vision.currentTitle': 'Stile attuale: NORMALE — clic per il successivo',
   'vision.nextLabel': 'SUCC',
   'vision.nextAriaLabel': 'Stile di visione del cockpit successivo',
   'vision.nextTitle': 'Stile di visione successivo',
@@ -233,7 +233,7 @@ export default {
   'context.weatherDisableAriaLabel': 'Disattiva gli effetti meteo del cockpit',
   'context.weatherStateOn': 'ON',
   'context.weatherStateOff': 'OFF',
-  'context.tr3bRestoreTitle': 'Ripristina l’aereo reale',
+  'context.tr3bRestoreTitle': "Ripristina l'aereo reale",
   'vision.styleNameNightVision': 'Visione notturna',
   'vision.styleNameThermal': 'Termico',
   'vision.styleNameNoir': 'Noir',
@@ -249,7 +249,7 @@ export default {
     'ATTIVA IL CONTESTO GLOBALE PER I PING DI PROSSIMITÀ',
   'signal.contactLostTitle': 'CONTATTO PERSO · {subject}',
   'signal.contactLostDetail':
-    'IL SOGGETTO HA LASCIATO IL FEED · LETTURA ALL’ULTIMO VALORE NOTO',
+    "IL SOGGETTO HA LASCIATO IL FEED · LETTURA ALL'ULTIMO VALORE NOTO",
   'signal.classMilitary': 'VOLO MILITARE',
   'signal.classCommercial': 'VOLO COMMERCIALE',
   'signal.contactCurrent': '{aircraftClass} · ATTUALE',
@@ -322,21 +322,21 @@ export default {
   'actions.clearLayersFailedToast':
     'Impossibile disattivare i livelli dati selezionati',
   'status.acquiring': 'ACQUISIZIONE',
-  'status.subjectFallback': 'entità',
-  'status.sharedSubjectDetail': '{subject} CONDIVISO',
+  'status.subjectFallback': 'elemento',
+  'status.sharedSubjectDetail': 'CONDIVISO: {subject}',
   'status.sharedFollowExpired':
     'Il tracciamento condiviso di {subject} è scaduto',
   'status.sharedRestoreFailed':
-    'Impossibile ripristinare {subject} condiviso — feed non disponibile',
-  'status.sharedUnavailable': '{subject} condiviso non è disponibile',
+    'Impossibile ripristinare la condivisione di {subject} — feed non disponibile',
+  'status.sharedUnavailable': 'La condivisione di {subject} non è disponibile',
   'context.modeContext': 'Contesto',
   'context.modeSpaceMissions': 'Missioni spaziali',
   'context.toastStartBlocked':
-    '{mode} non è partito perché un altro livello non si è fermato correttamente',
+    'Impossibile avviare {mode}: un altro livello non si è fermato correttamente',
   'context.toastTransitionFailedContacts':
-    'Contatti non ha potuto completare la transizione richiesta; riprova',
+    'Impossibile completare la transizione richiesta per Contatti; riprova',
   'context.toastTransitionFailedMissions':
-    'Missioni spaziali non ha potuto completare la transizione richiesta; riprova',
+    'Impossibile completare la transizione richiesta per Missioni spaziali; riprova',
   'context.toastInstallationsRefreshFailed':
     'Impossibile aggiornare le installazioni vicine; riprova',
   'context.toastRestoreFailed':
@@ -361,7 +361,7 @@ export default {
   'context.standbyMissionsDesc': 'MISSIONI SPAZIALI — lanci e asset orbitali',
   'context.radioToggleCloseAriaLabel': 'Chiudi i controlli Radio compatti',
   'context.toastMissionsCancelRestoreFailed':
-    'L’annullamento di Missioni spaziali non ha potuto ripristinare lo stato precedente dei livelli',
+    "L'annullamento di Missioni spaziali non ha potuto ripristinare lo stato precedente dei livelli",
   'utility.displayToggleCollapseAriaLabel':
     'Comprimi le opzioni display del cockpit',
   'utility.radioToggleCollapseAriaLabel':
