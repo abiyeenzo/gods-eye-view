@@ -170,8 +170,13 @@ Adjudicated exceptions live in "Internationalization" in
 
 Approved recurring terms per locale. Each locale PR appends its
  glossary here (English term · translation · catalog evidence) so later
- translators reuse approved copy verbatim. None yet — the first entry
- arrives with the first translated locale.
+ translators reuse approved copy verbatim.
+
+### Arabic (ar)
+
+The Arabic catalog is a machine-assisted first draft and needs review by a
+native speaker; corrections are welcome as PRs against
+`src/i18n/locales/ar/`. Arabic is the only right-to-left locale: the document gets dir="rtl" from the locale metadata. Plural entries carry every category Arabic selects (zero, one, two, few, many, other). Latin acronyms and codes (ADS-B, AIS, CCTV, GPS) and units stay as written, and Western digits are kept for readouts. Dynamic Latin tokens inside Arabic sentences may need bidi isolation; this has not been checked in the rendered UI.
 
 ## Running the i18n test gates
 

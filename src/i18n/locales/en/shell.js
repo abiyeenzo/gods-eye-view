@@ -77,6 +77,7 @@ export default {
   // shipped catalog (docs/TRANSLATORS.md), so an unshipped locale can never
   // render a selector button.
   'locale.en.ariaLabel': 'Switch to English',
+  'locale.ar.ariaLabel': 'Switch to Arabic',
 
   'credits.closeAria': 'Close data attribution',
 };

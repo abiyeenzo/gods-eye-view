@@ -2809,7 +2809,8 @@ test:track` 43 tracking invariants · headless QA harnesses under
 ### Internationalization / catalog locales (September 2026)
 
 The application-owned UI is fully extracted into message catalogs; **en**
-is the only shipped locale in this foundation state — additional locales
+and **ar** are the shipped locales (the built-in pair offers English; `ar` is selected
+through `GEV_DEFAULT_LOCALE` / `GEV_SECONDARY_LOCALE`) — additional locales
 land as stacked follow-up PRs, one per locale (Spanish first), each
 following the locale-addition recipe in
 [`docs/TRANSLATORS.md`](./TRANSLATORS.md). English is the default, the
