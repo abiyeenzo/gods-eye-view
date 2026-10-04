@@ -41,6 +41,7 @@ export default {
   'status.turningOffLiveData': 'ライブデータをオフにしています',
   'status.refreshingLiveData': 'ライブデータを更新中',
 
+  'credits.closeAria': 'データ出典を閉じる',
   'locale.en.ariaLabel': '言語を切り替え: 英語',
   'locale.es.ariaLabel': '言語を切り替え: スペイン語',
   'locale.fr.ariaLabel': '言語を切り替え: フランス語',
@@ -50,6 +51,4 @@ export default {
   'locale.ja.ariaLabel': '言語を切り替え: 日本語',
   'locale.zh.ariaLabel': '言語を切り替え: 中国語',
   'locale.ar.ariaLabel': '言語を切り替え: アラビア語',
-
-  'credits.closeAria': 'データ出典を閉じる',
 };

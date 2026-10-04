@@ -28,7 +28,7 @@ export default {
 
   'keySetup.closeAriaLabel': 'Fermer la configuration des clés',
   'keySetup.description':
-    "Le globe vole déjà sans clé. Chaque clé ci-dessous active un flux réel de plus : collez-en une et elle est enregistrée dans la configuration locale de l'application, puis le serveur redémarre. Les clés côté serveur restent sur cette machine ; Google Maps et Cesium ion s'exécutent dans le navigateur et doivent être restreintes au fournisseur. Les clés configurées ailleurs sont affichées mais jamais modifiées.",
+    "Le globe fonctionne déjà sans clé. Chaque clé ci-dessous active un flux réel de plus : collez-en une et elle est enregistrée dans la configuration locale de l'application, puis le serveur redémarre. Les clés côté serveur restent sur cette machine ; Google Maps et Cesium ion s'exécutent dans le navigateur et doivent être restreintes au fournisseur. Les clés configurées ailleurs sont affichées mais jamais modifiées.",
   'keySetup.hint': 'ÉCHAP pour fermer',
   'keySetup.note':
     "La clé Google Maps offre la planète photoréaliste, tout le reste s'y superpose.",

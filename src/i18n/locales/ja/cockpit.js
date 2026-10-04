@@ -81,9 +81,9 @@ export default {
   'display.scopeLabel': 'スコープ',
   'display.featherLabel': 'ぼかし',
   'display.featherTitle': 'スコープ縁のぼかし (キーホール半径に対する割合)',
-  'display.celestialToggleTitle': 'セレスチャルリング: 地球全体を表示',
-  'display.celestialLabel': 'セレスチャル',
-  'display.cleanViewToggleTitle': 'UIクロームを非表示',
+  'display.celestialToggleTitle': '天球リング: 地球全体を表示',
+  'display.celestialLabel': '天球',
+  'display.cleanViewToggleTitle': 'UIを非表示',
   'display.cleanViewLabel': 'クリーンUI',
   'display.bloomToggleTitle': 'ブルーム / グロー',
   'display.bloomLabel': 'ブルーム',
@@ -168,7 +168,7 @@ export default {
   'context.toggleAriaLabel': 'コンタクトパネルを折りたたむ',
   'context.toggleTitle': 'コンタクトパネルを折りたたむ',
   'context.qualifier': '参考情報のみ',
-  'context.cohortsAriaLabel': '周辺コホート数',
+  'context.cohortsAriaLabel': '周辺の種別ごとの件数',
   'context.nearestLabel': '最寄りの観測 / マップ済み',
   'context.nearestEmpty': '該当する例なし',
   'context.uncertaintyNote':
@@ -276,7 +276,7 @@ export default {
   'hud.metaClassCommercial': '民間',
   'hud.metaFeedAcquiringSurface': '地表を取得中',
   'hud.metaFeedSurfaceFallback': '地表フォールバック',
-  'hud.metaFeedStale': 'フィード古い',
+  'hud.metaFeedStale': '古いフィード',
   'hud.metaFeedLive': 'ライブ追跡',
   'hud.aircraftMetaTemplate': '{aircraftClass} · {feedState} · 針路一致',
 
@@ -432,8 +432,7 @@ export default {
   },
   'cctv.summaryNoneAvailable': '利用できる概要はありません。',
 
-  'display.celestialUnavailableTitle':
-    'セレスチャルリング: 標準スタイルで利用可能',
+  'display.celestialUnavailableTitle': '天球リング: 標準スタイルで利用可能',
   'display.detectionAriaTemplate': '検出オーバーレイ: {mode}',
   'display.detectionAriaOff': '検出オーバーレイ: オフ',
   'display.detectionLabelSparse': '低密度',

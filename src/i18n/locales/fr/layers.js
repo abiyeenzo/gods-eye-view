@@ -183,7 +183,7 @@ export default {
   'cctv.summary.isolated': 'VUE ISOLÉE',
   'cctv.summary.projMonitor': 'PROJ MONITEUR',
   'cctv.summary.projOff': 'PROJ OFF',
-  'cctv.summary.viewshed': 'VIEWSHED',
+  'cctv.summary.viewshed': 'ZONE VISIBLE',
   'cctv.summary.cal': 'CAL {value}',
   'cctv.summary.src': 'SRC {value}',
   'cctv.summary.context': 'CONTEXTE {value}',

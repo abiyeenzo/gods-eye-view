@@ -35,7 +35,7 @@ export default {
   'cctv.adjustTitle':
     'Kamera in der Welt ziehen: Ringe drehen, Pfeile verschieben, Griffe setzen Reichweite/FOV',
   'cctv.calPoseAriaLabel': 'Kamerapose: Wert anklicken zum Eingeben',
-  'cctv.calHeadingTitle': 'Kurs (Kompass °): anklicken zum Eingeben',
+  'cctv.calHeadingTitle': 'Ausrichtung (Kompass °): anklicken zum Eingeben',
   'cctv.calPitchTitle': 'Neigung (° auf/ab): anklicken zum Eingeben',
   'cctv.calFovTitle': 'Horizontales FOV (°): anklicken zum Eingeben',
   'cctv.calRangeTitle':
@@ -89,7 +89,7 @@ export default {
   'status.fallback': 'FALLBACK',
   'status.off': 'AUS',
   'status.partial': 'TEILWEISE',
-  'status.uncertain': 'UNSICHER',
+  'status.uncertain': 'UNKLAR',
   'status.enabling': 'WIRD AKTIVIERT',
   'status.disabling': 'WIRD DEAKTIVIERT',
 
@@ -115,7 +115,7 @@ export default {
   'meta.never': 'nie',
   'meta.loading': 'lädt...',
   'meta.uncertainLifecycle':
-    'UNSICHER · {source} · Lebenszyklus-Status muss abgeglichen werden',
+    'UNKLAR · {source} · Lebenszyklus-Status muss abgeglichen werden',
   'meta.transitioning': '{state} · {source}',
   'meta.stateSourceRetry':
     '{state} · {source} · {detail} · neuer Versuch {seconds}s',
@@ -181,7 +181,7 @@ export default {
   'cctv.summary.isolated': 'EINZELANSICHT',
   'cctv.summary.projMonitor': 'PROJ MONITOR',
   'cctv.summary.projOff': 'PROJ AUS',
-  'cctv.summary.viewshed': 'SICHTFELD',
+  'cctv.summary.viewshed': 'SICHTBEREICH',
   'cctv.summary.cal': 'KAL {value}',
   'cctv.summary.src': 'QUELLE {value}',
   'cctv.summary.context': '{value} KONTEXT',
@@ -233,7 +233,7 @@ export default {
   'radio.reconcile': 'ABGLEICHEN',
   'radio.enableAria': 'Radio aktivieren',
   'radio.disableAria': 'Radio deaktivieren',
-  'radio.reconcileAria': 'Radio abgleichen: Lebenszyklus unsicher',
+  'radio.reconcileAria': 'Radio abgleichen: Lebenszyklus unklar',
   'radio.meta.loading': 'Senderverzeichnis wird geladen…',
   'radio.meta.metadataOnly': 'Nur Verzeichnis-Metadaten',
   'radio.meta.chooseHint': 'Globus-Marker wählen oder Weiter nutzen.',
@@ -259,7 +259,7 @@ export default {
   'radio.state.enabling': 'Radio wird aktiviert…',
   'radio.state.disabling': 'Radio wird deaktiviert…',
   'radio.state.uncertain':
-    'Radio-Lebenszyklus unsicher: zum Abgleichen Aktivieren oder Deaktivieren nutzen',
+    'Radio-Lebenszyklus unklar: zum Abgleichen Aktivieren oder Deaktivieren nutzen',
 
   'missions.launchSite': 'STARTPLATZ',
   'missions.launchSiteValue': 'STARTPLATZ · {site}',
@@ -316,7 +316,7 @@ export default {
   'missions.replay.speedLabel': 'WIEDERGABETEMPO',
   'missions.replay.speedAria': 'Faktor der Wiedergabegeschwindigkeit',
   'missions.replay.countdown': 'T−{time} · {mission}',
-  'missions.replay.standbyDetail': 'START STANDBY',
+  'missions.replay.standbyDetail': 'STARTBEREITSCHAFT',
   'missions.replay.liftoff': 'ABHEBEN · {mission}',
   'missions.replay.ascentReplay': 'AUFSTIEGS-REPLAY · {mission}',
   'missions.replay.ascentEstimate': 'AUFSTIEGSSCHÄTZUNG · {mission}',
@@ -356,7 +356,7 @@ export default {
   'satellites.class.commsBlurb':
     'Breitband-Konstellationsschale: nur im Modus DICHT sichtbar',
 
-  'meta.refreshing': 'aktualisiert...',
+  'meta.refreshing': 'wird aktualisiert...',
   'firms.keyRequired': 'SCHLÜSSEL ERFORDERLICH',
   'firms.staleCached': 'VERALTET · im Cache {age}',
   'firms.liveUpdated': 'LIVE · aktualisiert {age}',
@@ -374,21 +374,22 @@ export default {
   'firms.card.focusAria': 'Branderkennung {title} fokussieren, {details}',
 
   'traffic.loadingSyncing':
-    'Fluss wird synchronisiert · Straßen: OpenStreetMap · Fluss: TomTom · Ohne Zuordnung: simuliert',
+    'Verkehrsfluss wird synchronisiert · Straßen: OpenStreetMap · Verkehr: TomTom · Ohne Zuordnung: simuliert',
   'traffic.liveCoverage':
-    'LIVE · Straßen: OpenStreetMap · Fluss: TomTom · {percent}% Abd.',
+    'LIVE · Straßen: OpenStreetMap · Verkehr: TomTom · {percent}% Abd.',
   'traffic.liveCoverageUnmatched':
-    'LIVE · Straßen: OpenStreetMap · Fluss: TomTom · {percent}% Abd. · Ohne Zuordnung: simuliert',
+    'LIVE · Straßen: OpenStreetMap · Verkehr: TomTom · {percent}% Abd. · Ohne Zuordnung: simuliert',
   'traffic.simulatedNoMatches':
-    'SIMULIERT · Straßen: OpenStreetMap · Fluss: TomTom (keine Treffer)',
-  'traffic.syncingRoads': 'Fluss wird synchronisiert · Straßen: {source}',
+    'SIMULIERT · Straßen: OpenStreetMap · Verkehr: TomTom (keine Treffer)',
+  'traffic.syncingRoads':
+    'Verkehrsfluss wird synchronisiert · Straßen: {source}',
   'traffic.liveRoadsFlowHidden':
-    'LIVE · Straßen: {source} · Straßen ohne Fluss ausgeblendet',
+    'LIVE · Straßen: {source} · Straßen ohne Verkehrsdaten ausgeblendet',
   'traffic.liveRoadsNoFlowInView':
-    'LIVE · Straßen: {source} · Keine Flussstraßen im Bild',
-  'traffic.roadsFlowLive': 'LIVE · Straßen: {source} · Fluss {percent}%',
+    'LIVE · Straßen: {source} · Keine Straßen mit Verkehrsdaten im Bild',
+  'traffic.roadsFlowLive': 'LIVE · Straßen: {source} · Verkehr {percent}%',
   'traffic.roadsFlowSimulated':
-    'SIMULIERT · Straßen: {source} · Fluss {percent}%',
+    'SIMULIERT · Straßen: {source} · Verkehr {percent}%',
   'traffic.simUnavailable': 'SIMULIERT: Verkehrsdienst nicht erreichbar',
   'traffic.simKeyless': 'SIMULIERT: TomTom-Schlüssel für Live-Daten hinzufügen',
 
@@ -433,7 +434,7 @@ export default {
   'awareness.nextTitle':
     'Weiter: nächster unbesuchter Kontakt im 250-km-Fenster',
   'awareness.note':
-    'Kontext aus offenen Quellen, kartiert/beobachtet. Fehlende Sendungen, nicht geladene Kartenbereiche oder nicht kartierte Standorte sind kein Beleg für Abwesenheit.',
+    'Kontext aus offenen Quellen, kartiert/beobachtet. Fehlende Funksignale, nicht geladene Kartenbereiche oder nicht kartierte Standorte sind kein Beleg für Abwesenheit.',
   'awareness.unavailableAria': 'Nicht verfügbar',
   'awareness.focusAria': '{label} fokussieren',
   'awareness.cohort.flights': 'Flüge',

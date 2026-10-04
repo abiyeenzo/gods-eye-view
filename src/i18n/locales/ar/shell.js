@@ -43,6 +43,7 @@ export default {
   'status.turningOffLiveData': 'جارٍ إيقاف البيانات الحية',
   'status.refreshingLiveData': 'جارٍ تحديث البيانات الحية',
 
+  'credits.closeAria': 'إغلاق إسناد البيانات',
   'locale.en.ariaLabel': 'تبديل اللغة: الإنجليزية',
   'locale.es.ariaLabel': 'تبديل اللغة: الإسبانية',
   'locale.fr.ariaLabel': 'تبديل اللغة: الفرنسية',
@@ -52,6 +53,4 @@ export default {
   'locale.ja.ariaLabel': 'تبديل اللغة: اليابانية',
   'locale.zh.ariaLabel': 'تبديل اللغة: الصينية',
   'locale.ar.ariaLabel': 'تبديل اللغة: العربية',
-
-  'credits.closeAria': 'إغلاق إسناد البيانات',
 };

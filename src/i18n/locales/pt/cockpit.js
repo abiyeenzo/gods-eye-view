@@ -168,7 +168,7 @@ export default {
   'context.cohortsAriaLabel': 'Contagem de grupos próximos',
   'context.nearestLabel': 'MAIS PRÓXIMO OBSERVADO / MAPEADO',
   'context.nearestEmpty': 'NENHUM EXEMPLO DISPONÍVEL',
-  'context.uncertaintyNote': 'SÓ ENTRADAS DISPONÍVEIS · NÃO É UM TUDO LIVRE',
+  'context.uncertaintyNote': 'SÓ ENTRADAS DISPONÍVEIS · NÃO GARANTE SEGURANÇA',
   'context.weatherEnableAriaLabel': 'Ativar efeitos de clima na cabine',
   'context.weatherEnableTitle': 'Ativar efeitos de clima na cabine',
   'context.panelTitle': 'CONTEXTO',
@@ -274,13 +274,13 @@ export default {
   'route.statusArrowEstimated': 'SETA · DIREÇÃO ESTIMADA',
   'route.directionLabel': 'DEST {bearing}',
   'context.uncertaintyContactLost':
-    'CONTATO PERDIDO · ÚLTIMA LEITURA CONHECIDA · NÃO É UM TUDO LIVRE',
+    'CONTATO PERDIDO · ÚLTIMA LEITURA CONHECIDA · NÃO GARANTE SEGURANÇA',
   'context.uncertaintyInputsUnknown': {
-    one: '{count} ENTRADA DESCONHECIDA · NÃO É UM TUDO LIVRE',
-    other: '{count} ENTRADAS DESCONHECIDAS · NÃO É UM TUDO LIVRE',
+    one: '{count} ENTRADA DESCONHECIDA · NÃO GARANTE SEGURANÇA',
+    other: '{count} ENTRADAS DESCONHECIDAS · NÃO GARANTE SEGURANÇA',
   },
   'context.uncertaintyInputsCurrent':
-    'ENTRADAS DISPONÍVEIS ATUAIS · NÃO É UM TUDO LIVRE',
+    'ENTRADAS DISPONÍVEIS ATUAIS · NÃO GARANTE SEGURANÇA',
   'context.nearestTemplate': '{cohort} · {contact}',
   'context.nearestUnavailableAria': '{cohort}, indisponível',
   'context.bearingNone': 'RMO —',
@@ -326,20 +326,21 @@ export default {
     'Não foi possível limpar as camadas de dados selecionadas',
   'status.acquiring': 'ADQUIRINDO',
   'status.subjectFallback': 'entidade',
-  'status.sharedSubjectDetail': '{subject} COMPARTILHADO',
+  'status.sharedSubjectDetail': 'COMPARTILHADO: {subject}',
   'status.sharedFollowExpired':
-    'O acompanhamento de {subject} compartilhado expirou',
+    'O acompanhamento compartilhado de {subject} expirou',
   'status.sharedRestoreFailed':
-    'Não foi possível restaurar {subject} compartilhado — feed indisponível',
-  'status.sharedUnavailable': '{subject} compartilhado está indisponível',
+    'Não foi possível restaurar o compartilhamento de {subject} — feed indisponível',
+  'status.sharedUnavailable':
+    'O compartilhamento de {subject} está indisponível',
   'context.modeContext': 'Contexto',
   'context.modeSpaceMissions': 'Missões espaciais',
   'context.toastStartBlocked':
     'Não foi possível iniciar {mode} porque outra camada não parou corretamente',
   'context.toastTransitionFailedContacts':
-    'Contatos não conseguiu concluir a transição solicitada; tente novamente',
+    'Contatos não conseguiram concluir a transição solicitada; tente novamente',
   'context.toastTransitionFailedMissions':
-    'Missões espaciais não conseguiu concluir a transição solicitada; tente novamente',
+    'Missões espaciais não conseguiram concluir a transição solicitada; tente novamente',
   'context.toastInstallationsRefreshFailed':
     'Não foi possível atualizar as instalações próximas; tente novamente',
   'context.toastRestoreFailed':
@@ -367,7 +368,7 @@ export default {
     'MISSÕES ESPACIAIS — lançamentos e ativos orbitais',
   'context.radioToggleCloseAriaLabel': 'Fechar controles compactos do rádio',
   'context.toastMissionsCancelRestoreFailed':
-    'O cancelamento de Missões espaciais não conseguiu restaurar o estado anterior das camadas',
+    'O cancelamento de Missões espaciais não conseguiram restaurar o estado anterior das camadas',
   'utility.displayToggleCollapseAriaLabel':
     'Recolher opções de exibição da cabine',
   'utility.radioToggleCollapseAriaLabel':

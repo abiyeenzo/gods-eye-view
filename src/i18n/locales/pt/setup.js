@@ -67,7 +67,7 @@ export default {
     'Salvo em {store}. Reiniciando — esta página recarrega sozinha.',
   'keySetup.status.removed':
     'Removido de {store}. Reiniciando — esta página recarrega sozinha.',
-  'keySetup.store.pinokio': 'a configuração do seu app',
+  'keySetup.store.pinokio': 'sua configuração do app',
   'keySetup.store.env': 'seu .env local',
   'keySetup.confirm.remove': 'Remover esta chave da sua configuração salva?',
   'mapStack.fallbackName': 'Esta pilha de mapa',
@@ -119,7 +119,7 @@ export default {
   'scenes.status.deleteShotConfirm': 'Excluir o plano "{shot}"?',
   'scenes.status.loaded': 'Carregado: {scene} / {shot}',
   'scenes.status.cameraUnavailable':
-    'Câmera indisponível — saia do cockpit primeiro',
+    'Câmera indisponível — saia da cabine primeiro',
   'scenes.status.noShotsToRun': 'Nenhum plano para executar',
   'scenes.status.runningShot': 'Executando {index}/{total}: {scene} / {shot}',
   'scenes.status.runComplete': 'Execução da cena concluída',

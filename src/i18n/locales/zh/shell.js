@@ -42,6 +42,7 @@ export default {
   'status.turningOffLiveData': '正在关闭实时数据',
   'status.refreshingLiveData': '正在刷新实时数据',
 
+  'credits.closeAria': '关闭数据来源说明',
   'locale.en.ariaLabel': '切换语言：英语',
   'locale.es.ariaLabel': '切换语言：西班牙语',
   'locale.fr.ariaLabel': '切换语言：法语',
@@ -51,6 +52,4 @@ export default {
   'locale.ja.ariaLabel': '切换语言：日语',
   'locale.zh.ariaLabel': '切换语言：中文',
   'locale.ar.ariaLabel': '切换语言：阿拉伯语',
-
-  'credits.closeAria': '关闭数据来源说明',
 };

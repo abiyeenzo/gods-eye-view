@@ -38,6 +38,7 @@ export default {
   'status.fetchingMappedSites': 'RICERCA SITI MAPPATI',
   'status.turningOffLiveData': 'DISATTIVAZIONE DATI LIVE',
   'status.refreshingLiveData': 'AGGIORNAMENTO DATI LIVE',
+  'credits.closeAria': 'Chiudi le attribuzioni dei dati',
   'locale.en.ariaLabel': 'Cambia lingua: inglese',
   'locale.es.ariaLabel': 'Cambia lingua: spagnolo',
   'locale.fr.ariaLabel': 'Cambia lingua: francese',
@@ -47,5 +48,4 @@ export default {
   'locale.ja.ariaLabel': 'Cambia lingua: giapponese',
   'locale.zh.ariaLabel': 'Cambia lingua: cinese',
   'locale.ar.ariaLabel': 'Cambia lingua: arabo',
-  'credits.closeAria': 'Chiudi le attribuzioni dei dati',
 };
