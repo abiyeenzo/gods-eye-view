@@ -43,7 +43,9 @@ const collect = (chunk) => {
 child.stdout.on('data', collect);
 child.stderr.on('data', collect);
 
+let finished = false;
 const stop = () => {
+  finished = true;
   child.kill();
   rmSync(state, { recursive: true, force: true });
 };
@@ -65,7 +67,9 @@ const url = await new Promise((resolve) => {
       resolve(ready);
     }
   });
-  child.once('exit', (code) => fail(`server exited early (code ${code})`));
+  child.once('exit', (code) => {
+    if (!finished) fail(`server exited early (code ${code})`);
+  });
 });
 console.log(`[smoke] server ready at ${url}`);
 
