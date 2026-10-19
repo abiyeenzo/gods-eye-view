@@ -6,6 +6,7 @@ import { localProviderPlugins } from '../providers/local.js';
 import { localMcpPlugin } from '../mcp/plugin.js';
 import { apiNotFoundPlugin } from './api-not-found.js';
 import { standaloneVoiceTools } from './voiceTools.js';
+import { unwatchedRuntimeDirsPlugin } from './unwatched-cache.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -21,9 +22,11 @@ export default defineConfig(({ command, mode }) => {
       ...localProviderPlugins({ realtime: { tools: standaloneVoiceTools() } }),
       localMcpPlugin(),
       apiNotFoundPlugin(),
+      unwatchedRuntimeDirsPlugin(),
     ],
     googleApiKey: process.env.GOOGLE_MAPS_API_KEY,
     cesiumToken: process.env.CESIUM_ION_TOKEN,
+    mapillaryToken: process.env.MAPILLARY_CLIENT_TOKEN,
     host: process.env.HOST,
     port: process.env.PORT,
     allowedHosts: resolveAllowedHosts(process.env.GEV_ALLOWED_HOSTS),
