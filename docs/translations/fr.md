@@ -6,7 +6,7 @@ Catalog: `src/i18n/locales/fr.json`. General rules: [TRANSLATORS.md](../TRANSLAT
 
 - Address the user with a plain second person and natural imperatives: « Activez », « Choisissez », « Collez », « Réessayez ». When space is tight or the text names an object, the infinitive works too: « Cadrer les aéronefs », « Voler vers la position ».
 - Sentence case, not Title Case. UPPERCASE English stays UPPERCASE, but only the words that matter get translated: « VOL MILITAIRE », « À L'INSTANT ». Aviation codes (HDG, BRG, CRS, FOV, DEST, SPD, TRK, ALT, VS, SQUAWK, ADS-B, AIS, CCTV, GNSS) stay identical, as a cockpit would print them.
-- No em dash. Write the pause with what fits: a colon, a comma, « ou », or two sentences. The translators' rule of keeping `—` applies to separators printed by product or reused from English, not to new French prose.
+- No em dash (tiret cadratin, U+2014). Write the pause with what fits: a colon, a comma, « ou », or two sentences. Where the English source needs a dash it already uses a plain hyphen, and French mirrors that.
 - Keep `·`, `→`, `↗`, `…`, `±`, `°`, `×`, the thin non-breaking space before `%` and `:` where French uses one, and the typographic apostrophe `'` in the prose.
 - Quotes are the guillemets « … », not straight double quotes. Only keys, code and environment names keep their original quotes.
 - Short labels, chips and HUD readouts stay short. A standard abbreviation beats a wrapped line: « TEMP », « PRÉCIP. », « VENT », « ACTUEL », « PRÊT », « INACTIF », « EN DIRECT ».

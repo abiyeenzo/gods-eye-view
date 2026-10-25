@@ -3,7 +3,7 @@
  *
  * A search that guesses is worse than one that declines: reading `12junk, 34oops`
  * as 12, 34 flies the operator somewhere they did not ask for and looks like a
- * successful search. So every rule here is exact — a component is a decimal
+ * successful search. So every rule here is exact - a component is a decimal
  * number, optionally signed, optionally marked with one hemisphere letter, and
  * nothing else. Two-dimensional WGS84 geo URIs use their own strict grammar.
  * Degrees/minutes/seconds and grid references are not handled;
@@ -47,7 +47,7 @@ function readComponent(text) {
   };
 }
 
-/** Split on a comma, a semicolon, or whitespace — never on anything else. */
+/** Split on a comma, a semicolon, or whitespace - never on anything else. */
 function splitComponents(query) {
   const text = String(query).trim();
   if (!text) return null;
