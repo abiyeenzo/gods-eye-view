@@ -1,0 +1,6 @@
+### Typography and icon hygiene
+
+- Removed every em dash (U+2014) from tracked text: source strings, comments, docs, locale catalogs (es/fr/ru/zh-CN keys and values) and bundled data. Pauses now use a plain hyphen, matching the HUD's existing `--` empty-state convention. Data files that must still recognize em dashes from upstream feeds (`radioCountry.js`, `radio/labels.js`) keep them as `\u2014` escapes only.
+- Replaced color-emoji glyphs with inline SVG icons: layer rows and rail/weather cards render an `iconSvg` field from the new shared `src/icons.js` set (satellite, plane, camera, video, bike, car, bus, wind, volcano, compass, waves, rocket, medal, antenna, flame, pin); the command dock's NVG/FLIR style buttons and the location readout use masked `/icon-moon.svg`, `/icon-thermal.svg` and `/location.svg`; the TR-3B toggle's saucer is now tintable inline SVG; key-tier status dots in Provider Settings are CSS-drawn.
+- Bikeshare, transit, location and warning strings no longer lead with emoji glyphs; selection cards name the mode in words instead.
+- README and dev docs: section/table emoji removed, 🟢/🟡/🔴 status legend replaced with `docs/media/icons/status-*.svg` images, ✅/❌ marks are now text ✓/✗.

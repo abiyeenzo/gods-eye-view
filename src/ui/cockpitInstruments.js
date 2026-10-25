@@ -286,7 +286,7 @@ export function setVisionMode(mode, { revealParameters = false } = {}) {
         style: names[next],
       }),
     );
-    this.visionCurrent.title = t('Current style: {style} — click for next', {
+    this.visionCurrent.title = t('Current style: {style} - click for next', {
       style: names[next],
     });
   }
