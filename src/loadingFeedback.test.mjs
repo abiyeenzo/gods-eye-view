@@ -94,20 +94,27 @@ test('deferred terminal notices lose ownership to newer acquisition epochs and d
 
 test('share-follow failures use the universal top-center status instead of the bottom toast', () => {
   const handler = shellMethod('_handleShareTrackingRestoreStatus').toString();
-  assert.match(handler, /this\.showStatus\(message\)/);
-  assert.match(handler, /this\.initialRestorePromise\.then\(showAfterStartupCover\)/);
-  assert.match(handler, /this\._lifetime\.frame\(\(\) => \{/);
-  assert.match(handler, /this\._lifetime\.listen\(\s*startupCover,\s*'transitionend',\s*showOnce,\s*\{ once: true \},?\s*\)/);
-  assert.match(handler, /fallbackTimer = this\._lifetime\.timeout\(showOnce, 1000\)/);
-  assert.doesNotMatch(handler, /this\._showToast\(message\)/);
-  assert.doesNotMatch(handler, /pushCockpitSignal/);
+  const present = shellMethod('_presentAfterStartupCover').toString();
+  assert.match(
+    handler,
+    /this\.initialRestorePromise\.then\(\(\) =>\s*this\._presentAfterStartupCover\(message, noticeGeneration\),?\s*\)/,
+  );
+  assert.match(present, /this\.showStatus\(message\)/);
+  assert.match(present, /this\._lifetime\.frame\(\(\) => \{/);
+  assert.match(present, /this\._lifetime\.listen\(\s*startupCover,\s*'transitionend',\s*showOnce,\s*\{ once: true \},?\s*\)/);
+  assert.match(present, /fallbackTimer = this\._lifetime\.timeout\(showOnce, 1000\)/);
+  assert.match(present, /canPresentDeferredStatusNotice\(/);
+  for (const source of [handler, present]) {
+    assert.doesNotMatch(source, /this\._showToast\(message\)/);
+    assert.doesNotMatch(source, /pushCockpitSignal/);
+  }
   assert.match(handler, /result\.classification === 'pending'/);
   assert.match(handler, /state: 'acquiring'/);
   assert.match(handler, /persistent: true/);
   assert.match(handler, /this\._shareTrackingNoticeGeneration \+= 1/);
-  assert.match(handler, /canPresentDeferredStatusNotice\(/);
   assert.match(handler, /if \(this\._shareTrackingAcquiringKey\) return/);
-  assert.match(handler, /result\.classification === 'followed'\s*\|\|\s*result\.classification === 'cancelled'/);
+  assert.match(handler, /result\.classification === 'followed'/);
+  assert.match(handler, /result\.classification === 'cancelled'\) return/);
 });
 
 test('universal notice masks active loading only for its own fixed dwell', () => {
@@ -465,7 +472,7 @@ test('a flow failure landing after the roads settle still ends the batch as LOAD
     loading: false,
     count: 544,
     mode: 'live',
-    error: 'SIMULATED - TomTom daily budget reached',
+    error: 'SIMULATED — TomTom daily budget reached',
   });
   state = reduceLoadingFeedback(state, flowFailed, 900);
   assert.equal(state.terminal, 'error');
@@ -509,7 +516,7 @@ test('shows traffic busy work and one fixed busy-to-idle confirmation', () => {
   assert.equal(state.visible, false);
 });
 
-test('the settled traffic chip shows exactly one percentage - the coverage it measured', () => {
+test('the settled traffic chip shows exactly one percentage — the coverage it measured', () => {
   // "LIVE · TomTom flow · 0% cov" beside a hard-coded "100%" read as a chip
   // arguing with itself. The 100% was never a measurement: a settled chip is
   // complete by definition, so the progress slot goes quiet and the label's
@@ -618,8 +625,8 @@ test('aggregates Mapped Installations refresh beside CCTV without changing eithe
 });
 
 // The reducer above is pure and fully covered; its DRIVER lives inside the
-// StyleManager class (a full viewer to instantiate), so - as with the panel
-// stack layout contract - the ticker's lifecycle is pinned against ui.js
+// StyleManager class (a full viewer to instantiate), so — as with the panel
+// stack layout contract — the ticker's lifecycle is pinned against ui.js
 // source. (perf rebase 2026-08-17)
 test('the loading ticker never runs hidden and stops after loading and notices settle', () => {
   const ui = readFileSync(new URL('./ui/shellFeedback.js', import.meta.url), 'utf8');
@@ -650,7 +657,7 @@ test('the loading ticker never runs hidden and stops after loading and notices s
   assert.doesNotMatch(
     arm,
     /setInterval\(\(\) => \{\s*if \(document\.hidden\) return;/,
-    'the bare hidden `return` inside this interval is the leak - it must be gone',
+    'the bare hidden `return` inside this interval is the leak — it must be gone',
   );
 
   // 3. Reaching idle stops it after any time-driven notice has completed.
@@ -669,8 +676,8 @@ test('the loading ticker never runs hidden and stops after loading and notices s
   // 4. Returning to visible resamples, so a batch that finished while hidden
   //    is reconciled and a still-running one re-arms its ticker. The handler
   //    must live on the class that OWNS _updateGlobalLoadingFeedback
-  //    (ShellFeedback) - wiring it into a neighbouring controller instead
-  //    throws on every visibilitychange - and must be torn down with the rest.
+  //    (ShellFeedback) — wiring it into a neighbouring controller instead
+  //    throws on every visibilitychange — and must be torn down with the rest.
   assert.match(
     ui,
     /this\._loadingVisibilityHandler = \(\) => \{\s*if \(!document\.hidden\) this\._updateGlobalLoadingFeedback\(\);\s*else this\._stopLoadingFeedbackTicker\(\);\s*\};\s*document\.addEventListener\(\s*'visibilitychange',\s*this\._loadingVisibilityHandler,?\s*\);/,

@@ -22,6 +22,7 @@ export class LocationControls {
     onCity,
     onPoi,
     onSearch,
+    onSearchEdit,
     onReset,
     doc = document,
     requestFrame = (callback) => requestAnimationFrame(callback),
@@ -73,6 +74,11 @@ export class LocationControls {
     });
     this.bind(elements.search, 'keydown', (event) => {
       if (event.key === 'Enter') void onSearch(elements.search.value);
+    });
+    // Typing corrects a failed query; closing the field (which empties it) drops its error.
+    this.bind(elements.search, 'input', () => onSearchEdit?.());
+    this.bind(elements.search, 'blur', () => {
+      if (!elements.search.value) onSearchEdit?.();
     });
     for (const button of elements.resetButtons)
       this.bind(button, 'click', onReset);
@@ -153,7 +159,9 @@ export class LocationControls {
       : record;
     const lines = locationMiniStatus(state);
     this.elements.statusCity.textContent =
-      lines.city === LOCATION_MINI_EMPTY.city ? t('Location: --') : lines.city;
+      lines.city === LOCATION_MINI_EMPTY.city
+        ? t('📍 Location: --')
+        : lines.city;
     if (lines.poi === LOCATION_MINI_EMPTY.poi) {
       this.elements.statusPoi.textContent = t('Landmark: --');
     } else if (lines.poi === LOCATION_MINI_SEARCHED_PLACEHOLDER.poi) {

@@ -567,7 +567,7 @@ test('the pointer claim outlives the click that consumed it', async (t) => {
   // Every layer binds its own handler to the same canvas and they all run
   // inside ONE browser event. Releasing the claim the moment the endpoint is
   // placed hands the rest of that same click to every ambient handler
-  // registered after this one - which is how placing A on top of a bikeshare
+  // registered after this one — which is how placing A on top of a bikeshare
   // station also deselected the station.
   directionsLayer.setParams({ arm: 'a' });
   assert.equal(pointerOwner(), DIRECTIONS_POINTER_OWNER);
@@ -689,7 +689,7 @@ test('a route cut off at the step cap says so instead of ending at a random turn
 
 test('re-arming reuses the lease this layer already holds', (t) => {
   ownershipFixture(t);
-  // A claim never stacks, not even under the same name - two live instances of
+  // A claim never stacks, not even under the same name — two live instances of
   // one tool are two owners. So arming B after arming A must not ask for a
   // second claim it cannot get.
   assert.equal(directionsLayer.setParams({ arm: 'a' }), true);
@@ -729,21 +729,21 @@ test('a refused arming names the tool holding the pointer and how to leave it', 
   // and he concluded Directions was broken. Silence was the bug.
   assert.equal(
     pointerBlockedMessage('draw', 'a'),
-    'Draw is active - press Escape twice to leave Draw, then set A',
+    'Draw is active — press Escape twice to leave Draw, then set A',
   );
   assert.equal(
     pointerBlockedMessage('draw', 'b'),
-    'Draw is active - press Escape twice to leave Draw, then set B',
+    'Draw is active — press Escape twice to leave Draw, then set B',
   );
   // A tool nobody has written an exit for still gets a usable sentence.
   assert.equal(
     pointerBlockedMessage('measure', 'a'),
-    'measure is active - turn measure off, then set A',
+    'measure is active — turn measure off, then set A',
   );
   // A registered owner without an exit is named by its tool, not its id.
   assert.equal(
     pointerBlockedMessage('recent-imagery-box', 'a'),
-    'Recent imagery is active - turn Recent imagery off, then set A',
+    'Recent imagery is active — turn Recent imagery off, then set A',
   );
   // Nothing to say when nothing is in the way, or when we are the holder.
   assert.equal(pointerBlockedMessage(null, 'a'), null);
@@ -754,7 +754,7 @@ test('a refused arming names the tool holding the pointer and how to leave it', 
   for (const [id, exit] of Object.entries(POINTER_TOOL_EXITS)) {
     assert.match(
       pointerBlockedMessage(id, 'a'),
-      new RegExp(`^${exit.name} is active - `),
+      new RegExp(`^${exit.name} is active — `),
     );
     assert.match(pointerBlockedMessage(id, 'a'), /, then set A$/);
   }
@@ -771,7 +771,7 @@ test('the refusal reaches the app toast, and a successful arming says nothing', 
   const releaseDraw = claimAs('draw');
   directionsLayer.setParams({ arm: 'a' });
   assert.deepEqual(toasts, [
-    'Draw is active - press Escape twice to leave Draw, then set A',
+    'Draw is active — press Escape twice to leave Draw, then set A',
   ]);
   // The row status the operator can also read is still set.
   assert.match(
@@ -846,9 +846,13 @@ test('route numbers follow the page language and never break from their unit', (
   t.after(() => setLocale('en'));
   assert.equal(routeDistanceText(8.4), '8\u00a0m');
   assert.equal(routeDistanceText(236), '240\u00a0m');
+  assert.equal(routeDistanceText(994), '990\u00a0m');
+  assert.equal(routeDistanceText(996), '1.0\u00a0km');
   assert.equal(routeDistanceText(1500), '1.5\u00a0km');
   assert.equal(routeDistanceText(2_345_000), '2345\u00a0km');
   assert.equal(routeDurationText(39), '39\u00a0s');
+  assert.equal(routeDurationText(59.4), '59\u00a0s');
+  assert.equal(routeDurationText(59.6), '1\u00a0min');
   assert.equal(routeDurationText(3900), '1\u00a0h\u00a05\u00a0min');
   assert.equal(routeDurationText(7200), '2\u00a0h');
   assert.equal(routeDistanceText(-1), '');
@@ -871,4 +875,76 @@ test('route numbers follow the page language and never break from their unit', (
   );
   const list = directionsStepList({ route });
   assert.equal(list.items[1].lead, '240\u00a0м');
+
+  // Japanese unit words follow the number: 1時間5分, but 1.5 km.
+  setLocale('ja');
+  assert.equal(routeDistanceText(1500), '1.5\u00a0km');
+  assert.equal(routeDurationText(39), '39秒');
+  assert.equal(routeDurationText(3900), '1時間5分');
+  assert.equal(routeDurationText(7200), '2時間');
+});
+
+test('ramp and lane wording stays localized after choosing the maneuver form', (t) => {
+  t.after(() => setLocale('en'));
+  const cases = [
+    [
+      'ru',
+      'Въезжайте по съезду плавно налево на I-95',
+      'Сверните на съезд резко направо',
+      'Займите левую полосу',
+    ],
+    [
+      'es',
+      'Toma la rampa ligeramente a la izquierda hacia I-95',
+      'Toma la salida bruscamente a la derecha',
+      'Toma el carril izquierdo',
+    ],
+    [
+      'ja',
+      'ランプを斜め左に進んでI-95に入る',
+      '出口を急角度で右に出る',
+      '左車線を通行',
+    ],
+    [
+      'zh-CN',
+      '向左前方驶入匝道，进入 I-95',
+      '从出口向右后方驶出',
+      '使用左转车道',
+    ],
+  ];
+  for (const [locale, ramp, exit, lane] of cases) {
+    setLocale(locale);
+    assert.equal(
+      directionsInstruction({
+        type: 'on ramp',
+        modifier: 'slight left',
+        name: 'I-95',
+      }),
+      ramp,
+    );
+    assert.equal(
+      directionsInstruction({ type: 'off ramp', modifier: 'sharp right' }),
+      exit,
+    );
+    assert.equal(
+      directionsInstruction({ type: 'use lane', modifier: 'sharp left' }),
+      lane,
+    );
+  }
+});
+
+test('the reroute tooltip keeps German mode nouns capitalized', (t) => {
+  t.after(() => setLocale('en'));
+  const title = (id) =>
+    directionsRowControls(idle).chips.find((chip) => chip.id === id).title;
+  assert.equal(title('mode-foot'), 'Walk — reroute for walk');
+  setLocale('de');
+  assert.equal(
+    title('mode-foot'),
+    'Zu Fuß – Route im Modus „Zu Fuß“ neu berechnen',
+  );
+  assert.equal(
+    title('mode-bike'),
+    'Fahrrad – Route im Modus „Fahrrad“ neu berechnen',
+  );
 });

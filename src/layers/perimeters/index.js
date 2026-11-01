@@ -11,7 +11,6 @@ import {
   isCurrentPublication,
 } from './inciweb.js';
 import { msg, t } from '../../i18n/index.js';
-import { ICONS } from '../../icons.js';
 export { normalizeFirePerimeterSnapshot } from './records.js';
 export { createWfigsPerimeterSource } from './source.js';
 export * from './cards.js';
@@ -56,6 +55,8 @@ export function createFirePerimetersLayer({
   let _dataSource = null;
   let _count = 0;
   let _lastUpdate = null;
+  // The proxy's last snapshot, served while WFIGS is unreachable.
+  let _stale = false;
   let _lastError = null;
   let _enabled = false;
   let _clickHandler = null;
@@ -80,7 +81,7 @@ export function createFirePerimetersLayer({
 
   /**
    * Refresh the InciWeb catalog off the render path: a hanging or failed
-   * fetch only costs the link line, never the perimeter refresh - the
+   * fetch only costs the link line, never the perimeter refresh — the
    * catalog is consumed solely by the selected card.
    */
   function refreshInciwebIndex(signal) {
@@ -96,7 +97,7 @@ export function createFirePerimetersLayer({
         if (_selectedId) publishSelectedCard();
       })
       .catch(() => {
-        // Catalog unavailable - cards stay linkless until the next attempt.
+        // Catalog unavailable — cards stay linkless until the next attempt.
       })
       .finally(() => {
         _indexFetchInFlight = false;
@@ -105,7 +106,7 @@ export function createFirePerimetersLayer({
 
   /**
    * Verify that a matched publication describes the current incident, not
-   * an archived same-name fire - the catalog is all-time. Async: the card
+   * an archived same-name fire — the catalog is all-time. Async: the card
    * republishes with the link once (and only if) the check passes.
    */
   function verifyLink(link, row) {
@@ -189,7 +190,7 @@ export function createFirePerimetersLayer({
     // layers yield to owned picks before their own overlay-card hit-tests,
     // so claiming these large ground polygons would make FIRMS/vessel/CCTV
     // cards inert anywhere over a perimeter. Unowned, our picks read as
-    // "empty space" to siblings - the pre-existing behavior for the globe.
+    // "empty space" to siblings — the pre-existing behavior for the globe.
     _clickHandler = screenSpaceEventHandlerFactory(_viewer);
     _clickHandler.setInputAction((click) => {
       if (pointer && !pointer.isPointerFree()) return;
@@ -213,7 +214,7 @@ export function createFirePerimetersLayer({
         return;
       }
       // A pick that belongs to a sibling layer (e.g. an aircraft) is not
-      // "empty space" - leave the selection alone and let that layer handle it.
+      // "empty space" — leave the selection alone and let that layer handle it.
       if (picked) {
         const pickId = picking.resolvePickId(picked);
         if (pickId && picking.isOwnedByOtherLayer(layer.id, pickId)) return;
@@ -247,8 +248,7 @@ export function createFirePerimetersLayer({
   const layer = {
     id: 'fire-perimeters',
     name: 'Fire Perimeters',
-    icon: '',
-    iconSvg: ICONS.flame,
+    icon: '🔥',
     source: 'NIFC WFIGS',
     updateInterval: 300000,
 
@@ -262,6 +262,7 @@ export function createFirePerimetersLayer({
       _count = 0;
       _lastUpdate = null;
       _lastError = null;
+      _stale = false;
       _enabled = false;
       console.log('[Data:FirePerimeters] Initialized');
     },
@@ -289,9 +290,21 @@ export function createFirePerimetersLayer({
       _request = request;
       refreshInciwebIndex(request.signal);
       try {
-        const rows = await source.getSnapshot({ signal: request.signal });
+        // The source contract is getSnapshot; a source that can also say how
+        // fresh its rows are (the WFIGS proxy) offers getSnapshotDetail.
+        const snapshot =
+          typeof source.getSnapshotDetail === 'function'
+            ? await source.getSnapshotDetail({ signal: request.signal })
+            : { rows: await source.getSnapshot({ signal: request.signal }) };
         if (request.signal.aborted || _request !== request || !_enabled)
           return false;
+        const { rows } = snapshot;
+        _stale = snapshot.stale === true;
+        // A stale snapshot is as old as its fetch, not this poll.
+        const updatedAt =
+          _stale && Number.isFinite(snapshot.fetchedAt)
+            ? snapshot.fetchedAt
+            : Date.now();
 
         // Incident facts may change independently of the polygon's source clock.
         const signature = JSON.stringify(
@@ -301,7 +314,7 @@ export function createFirePerimetersLayer({
         );
         if (signature === _snapshotSignature) {
           if (_selectedId) publishSelectedCard();
-          _lastUpdate = Date.now();
+          _lastUpdate = updatedAt;
           _lastError = null;
           return true;
         }
@@ -357,7 +370,7 @@ export function createFirePerimetersLayer({
         // Refresh (or drop) the selected incident's card against the new feed.
         if (_selectedId) publishSelectedCard();
         _count = rows.length;
-        _lastUpdate = Date.now();
+        _lastUpdate = updatedAt;
         _lastError = null;
         console.log(
           `[Data:FirePerimeters] Updated: ${_count} incidents, ${nextEntities.length} polygons`,
@@ -368,6 +381,8 @@ export function createFirePerimetersLayer({
           return false;
         console.warn('[Data:FirePerimeters] Fetch error:', e);
         _lastError = e?.message || msg('Perimeter source unavailable');
+        // A failure now outranks the stale snapshot still drawn.
+        _stale = false;
         return false;
       } finally {
         if (_request === request) _request = null;
@@ -393,6 +408,7 @@ export function createFirePerimetersLayer({
       _count = 0;
       _lastUpdate = null;
       _lastError = null;
+      _stale = false;
     },
 
     /** Snapshot incident facts (with card-anchor coordinates) for the analyst query engine. */
@@ -445,6 +461,7 @@ export function createFirePerimetersLayer({
         count: _count,
         lastUpdate: _lastUpdate,
         error: _lastError,
+        stale: _stale,
       };
     },
   };

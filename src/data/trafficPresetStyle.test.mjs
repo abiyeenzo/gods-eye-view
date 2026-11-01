@@ -13,7 +13,7 @@ const luma = ([r, g, b]) => (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
 const BUCKETS = ['free', 'slow', 'jam'];
 const MONO_STYLES = ['surveillance', 'thermal', 'noir'];
-const NORMAL_STYLES = ['normal', 'anime', 'snow', 'does-not-exist', '', undefined, null];
+const NORMAL_STYLES = ['normal', 'anime', 'does-not-exist', '', undefined, null];
 
 test('profile mapping: NVG/FLIR/noir are mono, retro is crt, everything else normal', () => {
   for (const s of MONO_STYLES) assert.equal(trafficStyleProfile(s), 'mono', s);
@@ -30,7 +30,7 @@ test('normal-profile styles never restyle: null rgba, zero size delta', () => {
   }
 });
 
-test('sim/uncovered dots (null bucket) are untouched under EVERY style - keyless path stays byte-identical', () => {
+test('sim/uncovered dots (null bucket) are untouched under EVERY style — keyless path stays byte-identical', () => {
   for (const s of [...MONO_STYLES, 'retro', ...NORMAL_STYLES]) {
     assert.equal(presetDotRgba(s, null), null, String(s));
     assert.equal(presetDotRgba(s, undefined), null, String(s));

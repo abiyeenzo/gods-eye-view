@@ -49,7 +49,7 @@ export function createViewport({ state: layerState, services, parts, source }) {
    *
    * C4 fix: at oblique pitch `computeViewRectangle()` spans toward the horizon,
    * so its midpoint can sit tens of km from what the user is looking at. Instead
-   * we pick the ellipsoid under the canvas center (`camera.pickEllipsoid` - this
+   * we pick the ellipsoid under the canvas center (`camera.pickEllipsoid` — this
    * works with the globe hidden under Google 3D tiles, where `scene.globe.pick`
    * is NOT reliable), fall back to the camera nadir on a sky/horizon look, and
    * pull horizon-gaze hits back to MAX_LOOKAT_PULL_KM from nadir.
@@ -183,6 +183,9 @@ export function createViewport({ state: layerState, services, parts, source }) {
       layerState._fetching = false;
       layerState._flowPending = 0;
       layerState._roadError = null;
+      // Nothing is drawn up here, cached or not.
+      layerState._flowStale = false;
+      layerState._flowOldestTileAt = null;
       parts.animation.clearDots();
       layerState._lastBounds = null;
       layerState._lastViewCenter = null;

@@ -16,7 +16,6 @@ import {
   FLEET_DR_INTERVAL_MS,
 } from './policy.js';
 import { emergencyBroadcastPhrase } from '../../data/aircraftEmergency.js';
-import { ICONS } from '../../icons.js';
 
 export function createQueries({
   flightState,
@@ -39,7 +38,7 @@ export function createQueries({
     services.recession;
 
   /**
-   * Cheap equirectangular distance (km) - plenty accurate for the ~150 km
+   * Cheap equirectangular distance (km) — plenty accurate for the ~150 km
    * ground-floor clamp gate; runs once per contact per poll, so no trig-heavy
    * haversine needed.
    * @param {number} lat1 @param {number} lon1 @param {number} lat2 @param {number} lon2
@@ -48,7 +47,7 @@ export function createQueries({
 
   /**
    * True when the aircraft's latest metadata reads "on or about the runway"
-   * (low + slow) - see the landed fast-cull rationale above. Both gates must
+   * (low + slow) — see the landed fast-cull rationale above. Both gates must
    * hold, so a plane missing either datum keeps the normal grace.
    * @param {string} icao24 - ICAO 24-bit transponder address.
    * @returns {boolean}
@@ -59,7 +58,7 @@ export function createQueries({
     if (!info) return false;
     // Round 7 (owner: "fewer planes than OpenSky's own map" + "parked planes
     // never heal"): the fast cull only applies to contacts that were AIRBORNE
-    // this session - its original target, the post-LANDING ghost. OpenSky's
+    // this session — its original target, the post-LANDING ghost. OpenSky's
     // ground coverage flaps constantly, so fast-culling every grounded contact
     // put parked planes in an evict/re-enter churn: each re-entry was a
     // brand-new contact with cold floor state (geoid-height first poll), so
@@ -67,7 +66,7 @@ export function createQueries({
     // contacts now ride the normal MISSING_POLL_LIMIT grace and keep their
     // identity (and warmed floors) across feed flaps.
     if (info.wasAirborne !== true) return false;
-    // Was airborne, then grounded, then VANISHED from the poll - landed ghost.
+    // Was airborne, then grounded, then VANISHED from the poll — landed ghost.
     if (info.onGround) return true;
     return (
       Number.isFinite(info.altitude) &&
@@ -94,12 +93,12 @@ export function createQueries({
    * in both layers.
    *
    * Registration is aircraft IDENTITY, not route, so unlike the origin/destination
-   * line it is NOT plausibility-gated - an adsbdb tail number describes the
+   * line it is NOT plausibility-gated — an adsbdb tail number describes the
    * airframe itself and cannot go stale the way a leg can.
    *
    * This is a DISPLAY string only. Identity everywhere in this layer is `icao24`
    * (the `_billboards`/`_flightData` key, the `sourceId` detection declutter hashes,
-   * the `id` that trackById/Context cohorts resolve) - never the label.
+   * the `id` that trackById/Context cohorts resolve) — never the label.
    * @param {string} icao24 - ICAO 24-bit transponder address (the identity key).
    * @param {Object|null|undefined} info - `_flightData` record for this aircraft.
    * @returns {string} Display label; never empty.
@@ -120,16 +119,16 @@ export function createQueries({
    */
 
   function _describeFlight(icao24) {
-    // DATA, NOT PIXELS - deliberately UNFLOORED (2026-08-19). The display floor
+    // DATA, NOT PIXELS — deliberately UNFLOORED (2026-08-19). The display floor
     // lifts grounded contacts onto the visible mesh so the sprite you see is not
     // buried; that is a rendering correction, not a measurement. This descriptor
-    // feeds query/analyst/subject APIs - `findByQuery` (voice track-by-name),
+    // feeds query/analyst/subject APIs — `findByQuery` (voice track-by-name),
     // `getTrackedInfo` (cockpit + readout altitude), `getTrackedSubject`
-    // (proximity counts and distances) - where the honest answer is what the
+    // (proximity counts and distances) — where the honest answer is what the
     // aircraft REPORTED, not where its icon was nudged to avoid clipping tiles.
     // `altitudeM` is therefore the barometric/aviation value and `renderAltitudeM`
     // the fix-time datum, neither of them the floored display height. No
-    // user-visible surface renders `position` as the plane's on-screen location -
+    // user-visible surface renders `position` as the plane's on-screen location —
     // every visual consumer reads the floored per-frame cache instead (see
     // `_trackedDisplayPosition`). If that ever changes, floor this path too.
     const info = flightState.records.data.get(icao24);
@@ -221,7 +220,7 @@ export function createQueries({
 
   /**
    * Map one aircraft's internal poll record to a plain JSON-safe analyst
-   * record (analyst query engine seam). Pure - no Cesium types, no fetches;
+   * record (analyst query engine seam). Pure — no Cesium types, no fetches;
    * enrichment fields read the CACHED adsbdb values only. Missing/unknown
    * fields are null, never NaN/undefined. The route-plausibility verdict is
    * computed by the CALLER (it needs the billboard position) and passed in,
@@ -254,13 +253,13 @@ export function createQueries({
     return {
       // Display identity for the narration layer. `id` is NOT a queryable field
       // (see ANALYST_LAYERS) and follow-ups carry whole records, so this is a
-      // label, not a key - the engine keys on `icao24` below.
+      // label, not a key — the engine keys on `icao24` below.
       id: callsign || text(info?.registration) || icao24,
       icao24,
       callsign,
       lat: num(info?.rawLat),
       lon: num(info?.rawLon),
-      altitudeM: num(info?.altitude), // barometric/MSL - the aviation field, not the render height
+      altitudeM: num(info?.altitude), // barometric/MSL — the aviation field, not the render height
       speedMps: num(info?.velocity),
       heading: num(info?.true_track),
       verticalRateMps: num(info?.verticalRate),
@@ -296,9 +295,7 @@ export function createQueries({
 
     name: 'Live Flights',
 
-    icon: '',
-
-    iconSvg: ICONS.plane,
+    icon: '✈️',
 
     source: flightState.feed._lastSource,
 
@@ -314,7 +311,7 @@ export function createQueries({
      * Live layer params.
      * `models3d` toggles 3D glTF model rendering for the FLEET (altitude-gated): when on,
      * surrounding aircraft become 3D models once the camera is zoomed in past MODEL_ALT_CEIL_M.
-     * The TRACKED contact is NOT gated by this - it takes its 3D model by camera distance
+     * The TRACKED contact is NOT gated by this — it takes its 3D model by camera distance
      * regardless (see `_trackedModelRegimeActive` / trackedModelRegime.js).
      * `models3dMode` is 'proximity' (nearest MODEL_MAX in view) or 'all' (every in-view plane).
      * @param {{models3d?: boolean, models3dMode?: 'proximity'|'all', selectedFlightsTrackingId?: string|null}} params
@@ -335,7 +332,7 @@ export function createQueries({
           parts.rendering._releaseModels();
           parts.tracking._syncTracked2dRotation();
           // Restore fleet billboards (the horizon-cull pass re-asserts next tick), but NEVER the
-          // tracked plane's own fleet billboard - its tracked entity is the visual, so re-showing it
+          // tracked plane's own fleet billboard — its tracked entity is the visual, so re-showing it
           // here would double-image the tracked plane when 3D is turned off mid-track.
           if (flightState._billboardCollection)
             for (const [icao, bb] of flightState._billboards) {
@@ -361,7 +358,7 @@ export function createQueries({
       ) {
         flightState._irBoost = params.irBoost;
         parts.rendering._reloadModelsForIrBoost();
-        // Sprites don't reload with the models - swap the TR-3B glyph between its
+        // Sprites don't reload with the models — swap the TR-3B glyph between its
         // cold and thermal-reactive variants directly. Bounded by the operator's
         // own conversions, so this never touches the ordinary fleet.
         parts.tracking._refreshTr3bForStyle();
@@ -455,8 +452,8 @@ export function createQueries({
         const isTracked = icao24 === flightState._trackedIcao;
         // Keep planes rendered as a 3D model (billboard hidden) so the detection box
         // doesn't vanish on the 2D→3D handoff; bb.position stays current while hidden.
-        const model = flightState._models.get(icao24);
-        const modelOwnsVisual = parts.rendering._modelOwnsVisual(icao24);
+        const model = flightState._models.get(icao24) ?? null;
+        const modelOwnsVisual = parts.rendering._modelOwnsVisual(icao24, model);
         if (!isTracked && !bb.show && !modelOwnsVisual) continue;
         const info = flightState.records.data.get(icao24);
         let object = flightState._detectionObjects.get(icao24);
@@ -474,7 +471,7 @@ export function createQueries({
         // on the buried billboard position, which for a grounded plane is ~100 m below
         // and rises only as the coarse ground-floor cell warms. Zero extra sampling and
         // no `_modelDisplayPosition` call from postRender. Sprite-owned contacts keep
-        // `bb.position` - sprite and bracket are co-located there, so association holds.
+        // `bb.position` — sprite and bracket are co-located there, so association holds.
         const spec = modelOwnsVisual
           ? parts.rendering._modelSpec(info?.klass)
           : null;
@@ -493,9 +490,20 @@ export function createQueries({
         if (!pos) continue;
         object.position = pos;
         object.skipLabel = isTracked;
-        // Card text only - declutter/cohort identity is `object.sourceId` (icao24).
-        const id = _contactLabel(icao24, info);
-        if (object.id !== id) object.id = id;
+        // Card text only — declutter/cohort identity is `object.sourceId` (icao24).
+        const callsign = info?.callsign;
+        const registration = info?.registration;
+        // Records and enrichment may change in place. Cache by field values,
+        // while keeping the live visual anchor above independent of text.
+        if (
+          object.id === undefined ||
+          object._labelCallsign !== callsign ||
+          object._labelRegistration !== registration
+        ) {
+          object.id = _contactLabel(icao24, info);
+          object._labelCallsign = callsign;
+          object._labelRegistration = registration;
+        }
         const altitude = info?.altitude;
         if (object._altitude !== altitude) {
           object._altitude = altitude;
@@ -535,8 +543,8 @@ export function createQueries({
       // Registration is searched alongside callsign because it is what the
       // operator SEES: a callsign-less contact reads as its tail number on the
       // card, in the analyst's answer, and in the Contacts list. Matching only
-      // callsigns meant "follow 6606" - and the analyst → track_entity handoff
-      // the tool instructions prescribe - answered "nothing matched" for the
+      // callsigns meant "follow 6606" — and the analyst → track_entity handoff
+      // the tool instructions prescribe — answered "nothing matched" for the
       // very identity the app had just shown. Ranking is shared with the
       // military layer (contactMatch.js) so the two cannot disagree, and it is
       // strictly tiered so a registration can never out-rank a real callsign on
@@ -638,7 +646,7 @@ export function createQueries({
 
     /**
      * Return id/label/position for up to maxCount currently rendered aircraft.
-     * Cheap snapshot for voice-tool framing - billboard positions only, no
+     * Cheap snapshot for voice-tool framing — billboard positions only, no
      * dead reckoning and no cloning.
      * @param {number} [maxCount=500] - Maximum number of entries to return.
      * @returns {Array<{id: string, label: string, position: Cesium.Cartesian3, latitude: number, longitude: number, altitudeM: number}>}
@@ -651,7 +659,7 @@ export function createQueries({
      * 1,000-row cap, so "not in the returned rows" is not "gone". Id matching
      * mirrors trackById: exact key first, then lowercase.
      * A disabled layer keeps its records but hides the collection, so it must
-     * decline rather than answer from data the user can no longer see -
+     * decline rather than answer from data the user can no longer see —
      * otherwise a preserved subject reads as fresh off stale hidden state.
      * @param {string} icao24 Contact identifier.
      * @returns {boolean|null} Presence, or null when the layer is disabled or
@@ -721,7 +729,7 @@ export function createQueries({
     /**
      * Snapshot the layer's in-memory records as plain JSON-safe objects for
      * the analyst query engine. On-demand only (called at most once per
-     * spoken query) - zero per-frame cost, no listeners, no caching, no
+     * spoken query) — zero per-frame cost, no listeners, no caching, no
      * enrichment fetches (cached adsbdb values only). Returns [] while the
      * layer is disabled or empty.
      * @param {number} [maxCount=2000] - Maximum records to return (truncation).

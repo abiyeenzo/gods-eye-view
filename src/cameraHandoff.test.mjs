@@ -91,7 +91,7 @@ test('voice Cockpit entry reaches the camera only through stamping seams', () =>
   // Cockpit is the camera-authority VETO HOLDER, not a petitioner: routing
   // entry through _runExplicitNavigation would make it refuse itself, because
   // cockpitActive is the state entry is trying to reach. What entry owes the
-  // policy is the STAMP that retires deferred navigation - and the voice path
+  // policy is the STAMP that retires deferred navigation — and the voice path
   // must not acquire the camera by any route that skips it.
   //
   // The transaction has exactly two camera-owner mutations, and each one
@@ -240,7 +240,7 @@ test('validated voice camera destinations share the UI navigation authority faca
     'const start = () => {',
     /return typeof runNavigation === 'function'\s*\? runNavigation\(start\)\s*: start\(\);/,
   ], 'route validation before handoff');
-  // The corridor warm is injected the same way the floor READ is - the dolly
+  // The corridor warm is injected the same way the floor READ is — the dolly
   // never reaches into the data layer itself, and the voice dispatch is the one
   // place that binds both.
   assert.match(voice, /\(lat, lon\) => floorServices\.cachedGroundFloor\(lat, lon\),[\s\S]{0,200}?\(cells\) => floorServices\.warmGroundFloor\(cells\),/);
@@ -261,7 +261,7 @@ test('deferred search releases only after its final authority check', () => {
   assert.match(ui, /begin: \(\) => this\._beginDeferredNavigation\('location'\)/);
   assert.match(ui, /beforeFly: \(generation\) => this\._reassertNavigationHandoff\(generation\)/);
   assert.match(ui, /isCurrent: \(generation\) =>\s*!this\._disposed && generation === this\._navigationGeneration/);
-  assert.match(ui, /change\.type === 'settled'\)\s*this\._settleLocationSearchUi\(change\.generation\)/);
+  assert.match(ui, /change\.type === 'settled'\)\s*this\._settleLocationSearchUi\(change\.generation, \{\s*keepQuery: state\.status === 'missing' \|\| state\.status === 'failed',?\s*\}\)/);
   assert.doesNotMatch(search.slice(0, search.indexOf('await this.search')), /_releaseFollowCamera/);
 });
 

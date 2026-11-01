@@ -3,7 +3,7 @@
  *
  * A search that guesses is worse than one that declines: reading `12junk, 34oops`
  * as 12, 34 flies the operator somewhere they did not ask for and looks like a
- * successful search. So every rule here is exact - a component is a decimal
+ * successful search. So every rule here is exact — a component is a decimal
  * number, optionally signed, optionally marked with one hemisphere letter, and
  * nothing else. Two-dimensional WGS84 geo URIs use their own strict grammar.
  * Degrees/minutes/seconds and grid references are not handled;
@@ -47,15 +47,37 @@ function readComponent(text) {
   };
 }
 
-/** Split on a comma, a semicolon, or whitespace - never on anything else. */
+/**
+ * Split on a comma, a semicolon, or whitespace — never on anything else.
+ * A hemisphere letter stays with the number it names, so `40.7 N 74.0 W`
+ * is two components. Splitting on the space before that letter used to
+ * leave three pieces and the search declined the coordinate.
+ */
 function splitComponents(query) {
   const text = String(query).trim();
   if (!text) return null;
-  const parts = /[,;]/.test(text)
-    ? text.split(/[,;]/)
-    : text.split(/\s+(?=[+-]?[.\d]|[NSEW]\s*[+-]?[.\d])/i);
-  const trimmed = parts.map((part) => part.trim());
-  return trimmed.length === 2 && trimmed.every(Boolean) ? trimmed : null;
+  if (/[,;]/.test(text)) {
+    const trimmed = text.split(/[,;]/).map((part) => part.trim());
+    return trimmed.length === 2 && trimmed.every(Boolean) ? trimmed : null;
+  }
+  const words = text.split(/\s+/);
+  // Each component has at most a number, a degree sign and one hemisphere.
+  if (words.length > 6) return null;
+  // Keep every character: extracting tokens would turn `1e3` or `1.2.3`
+  // into invented coordinates. A lone letter between numbers can name either
+  // component; require an unambiguous split rather than guessing its owner.
+  let result = null;
+  for (let boundary = words.length - 1; boundary > 0; boundary -= 1) {
+    const parts = [
+      words.slice(0, boundary).join(' '),
+      words.slice(boundary).join(' '),
+    ];
+    if (parts.every((part) => readComponent(part))) {
+      if (result) return null;
+      result = parts;
+    }
+  }
+  return result;
 }
 
 /** Present a parsed pair the way a coordinate is normally written. */

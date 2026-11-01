@@ -89,7 +89,7 @@ test('KEY REQUIRED disables every control and says how to add the key', () => {
 
 test('a key Mapillary rejected reads KEY REJECTED and names the fix', () => {
   const error =
-    'Mapillary rejected MAPILLARY_CLIENT_TOKEN - replace it in Provider Settings';
+    'Mapillary rejected MAPILLARY_CLIENT_TOKEN — replace it in Provider Settings';
   const view = presentStreetLevelPanel(
     snapshot({
       enabled: true,
@@ -273,6 +273,14 @@ test('viewer caption reads "Image by" left, date right, and links to Mapillary',
   assert.equal(view.viewer.open, true);
 });
 
+test('a bearing that rounds to north reads 0°, not 360°', () => {
+  const caption = (bearing) =>
+    presentStreetLevelPanel(snapshot({ street: { open: true, bearing } }))
+      .viewer.captionRight;
+  assert.equal(caption(359.4), '359°');
+  assert.equal(caption(359.6), '0°');
+});
+
 test('an image without a creator name leaves the left caption empty', () => {
   const view = presentStreetLevelPanel(
     snapshot({
@@ -404,7 +412,7 @@ test('KEY REQUIRED points at Street View when it would draw with the Google key'
     }),
   );
   const guidance =
-    'Needs MAPILLARY_CLIENT_TOKEN - add it in Provider Settings, or light STREET VIEW to use your Google Maps key';
+    'Needs MAPILLARY_CLIENT_TOKEN — add it in Provider Settings, or light STREET VIEW to use your Google Maps key';
   assert.equal(view.status.text, 'KEY REQUIRED');
   assert.equal(view.status.title, guidance);
   assert.equal(view.meta, guidance);

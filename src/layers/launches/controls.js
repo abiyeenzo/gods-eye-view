@@ -1,14 +1,10 @@
-import { ICONS } from '../../icons.js';
-
 export function createControls({ state: layerState, services, parts, source }) {
   const methods = {
     id: 'rocket-launches',
 
     name: 'Space Missions (30d)',
 
-    icon: '',
-
-    iconSvg: ICONS.rocket,
+    icon: '🚀',
 
     source: 'Launch Library 2',
 

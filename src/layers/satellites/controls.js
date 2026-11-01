@@ -6,7 +6,6 @@ import {
 import * as Cesium from 'cesium';
 import { t } from '../../i18n/index.js';
 import { ISS_NORAD, POINT_STYLES } from './policy.js';
-import { ICONS } from '../../icons.js';
 
 export function createControls({ state: layerState, services, parts, source }) {
   const { isExplicitLayerStateOrigin } = services.layerState;
@@ -94,9 +93,7 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     name: 'Satellites',
 
-    icon: '',
-
-    iconSvg: ICONS.satellite,
+    icon: '🛰️',
 
     source: 'CelesTrak',
 
@@ -134,7 +131,7 @@ export function createControls({ state: layerState, services, parts, source }) {
         const isTracked = noradId === layerState._trackedNorad;
         // A docked companion sits at the tracked subject's own position, so its
         // mark and label would stack underneath the tracked card. It is listed on
-        // that card instead. Only members of the tracked cluster are affected -
+        // that card instead. Only members of the tracked cluster are affected —
         // unrelated nearby satellites are never suppressed.
         if (!isTracked && layerState._dockedCompanions.has(noradId)) continue;
         const cat = layerState._catalog.get(noradId);
@@ -225,7 +222,7 @@ export function createControls({ state: layerState, services, parts, source }) {
       for (const [noradId, point] of layerState._points) {
         if (result.length >= cap) break;
         if (!point.position) continue;
-        // Dense extras are points-only - keep voice/framing lists to the core catalog.
+        // Dense extras are points-only — keep voice/framing lists to the core catalog.
         if (
           layerState._denseIds.length > 0 &&
           layerState._catalog.get(noradId)?.group === 'dense'
@@ -369,7 +366,7 @@ export function createControls({ state: layerState, services, parts, source }) {
       )
         return null;
       const sat = layerState._catalog.get(layerState._trackedNorad);
-      // Per-frame cache (WS-D2) - same epoch as the dot/label/camera this frame.
+      // Per-frame cache (WS-D2) — same epoch as the dot/label/camera this frame.
       const pos = parts.tracking._getTrackedFramePosition();
       if (!pos) return null;
       return {
@@ -474,7 +471,7 @@ export function createControls({ state: layerState, services, parts, source }) {
      * catalog chip plus a class legend so the point colors are learnable without
      * a new panel.
      *
-     * The chip is stateless - it declares the params to apply and the manager
+     * The chip is stateless — it declares the params to apply and the manager
      * owns the write, so the Space Missions snapshot/restore path (which drives
      * the same `catalog` param) stays the single source of truth and the chip
      * always renders whatever the layer actually has.
@@ -502,12 +499,12 @@ export function createControls({ state: layerState, services, parts, source }) {
       );
       if (loading) title = t('Loading the Starlink shell…');
       else if (failed)
-        title = t('Starlink {detail} - click to retry', {
+        title = t('Starlink {detail} — click to retry', {
           detail: layerState._denseError || t('load failed'),
         });
       else if (active)
         title = t(
-          'Showing the full Starlink shell - click for the core catalog only',
+          'Showing the full Starlink shell — click for the core catalog only',
         );
       return {
         chips: [
@@ -538,7 +535,7 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     /**
      * Install the manager's "row controls changed" callback. The dense load is
-     * asynchronous, so completion and failure have to push a re-render - nothing
+     * asynchronous, so completion and failure have to push a re-render — nothing
      * else would repaint this row before the 5-minute catalog refresh.
      * @param {(() => void)|null} listener Callback, or null to detach.
      */

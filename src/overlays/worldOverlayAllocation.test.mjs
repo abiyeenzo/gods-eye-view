@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { LOCAL_OVERLAY_COHORT_LIMIT } from '../data/localGeojson.js';
+import { LOCAL_OVERLAY_COHORT_LIMIT } from '../data/localGeojsonCore.js';
 import { FIRMS_AMBIENT_COHORT_LIMIT } from '../data/firmsLabels.js';
 import { vesselOverlayCohortLimit } from '../data/vesselLabels.js';
 import { CCTV_AMBIENT_CARD_MAX } from '../data/cctvLod.js';
@@ -268,7 +268,7 @@ const WORKLOADS = [
     // continental, so what matters is its own cohort cost.
     //
     // Re-measured against the current worker: median 3,900 B/frame, max 4,114,
-    // and 85.7 B/candidate at the ceiling - inside the shared 154 B/candidate
+    // and 85.7 B/candidate at the ceiling — inside the shared 154 B/candidate
     // bound, so no per-source exception is taken. The 5,200 frame budget
     // carries 26.4% headroom over the measured maximum.
     name: 'with the air-quality station cohort live',

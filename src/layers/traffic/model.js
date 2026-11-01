@@ -162,7 +162,7 @@ export function createModel({ state: layerState, services, parts, source }) {
     const budgets = new Array(roads.length).fill(0);
     let remaining = Math.max(0, dotCap);
 
-    // Pass 1 - fairness seed: give one dot to every road (highest-demand first)
+    // Pass 1 — fairness seed: give one dot to every road (highest-demand first)
     const firstPassOrder = planned
       .map((count, index) => ({ count, index }))
       .sort((a, b) => b.count - a.count);
@@ -176,7 +176,7 @@ export function createModel({ state: layerState, services, parts, source }) {
 
     if (remaining <= 0) return budgets;
 
-    // Pass 2 - proportional distribution of the remaining budget
+    // Pass 2 — proportional distribution of the remaining budget
     let totalRemainder = 0;
     for (let i = 0; i < planned.length; i++) {
       totalRemainder += Math.max(0, planned[i] - budgets[i]);
@@ -195,7 +195,7 @@ export function createModel({ state: layerState, services, parts, source }) {
       residuals.push({ index: i, residual: ideal - add });
     }
 
-    // Pass 3 - largest-remainder: hand out leftover dots from floor rounding
+    // Pass 3 — largest-remainder: hand out leftover dots from floor rounding
     let leftover = remaining - assigned;
     if (leftover > 0 && residuals.length > 0) {
       residuals.sort((a, b) => b.residual - a.residual);
@@ -229,6 +229,7 @@ export function createModel({ state: layerState, services, parts, source }) {
    * @param {boolean} [input.liveMode] - `/api/tomtom/status` reported a key.
    * @param {boolean} [input.fetching] - A viewport load is in flight.
    * @param {string|null} [input.flowError] - `deriveTrafficFlowError` result, if any.
+   * @param {boolean} [input.stale] - The flow came from cached proxy tiles.
    * @param {number} [input.coveragePct] - Share of shown dots on matched roads, 0–100.
    * @param {boolean} [input.statusUnavailable] - The status probe itself failed.
    * @param {string} [input.roadSource] - Name of the geometry being drawn.
@@ -239,12 +240,13 @@ export function createModel({ state: layerState, services, parts, source }) {
     liveMode = false,
     fetching = false,
     flowError = null,
+    stale = false,
     coveragePct = 0,
     statusUnavailable = false,
     roadSource = 'OpenStreetMap',
   } = {}) {
     // `mode` is the CONFIGURED source (live key present vs keyless), not this
-    // instant's health - health rides on `error`. The qa-traffic harness pins
+    // instant's health — health rides on `error`. The qa-traffic harness pins
     // that meaning.
     const mode = liveMode ? 'live' : 'sim';
     if (liveMode && flowError) {
@@ -253,10 +255,20 @@ export function createModel({ state: layerState, services, parts, source }) {
       // has to BE the error text or the steady state reverts to a bare
       // "TomTom daily budget reached" that never says what is on screen.
       // The reason is ours (flow.js marks it) or carries an HTTP code.
-      const degraded = t('SIMULATED - {reason}', {
+      const degraded = t('SIMULATED — {reason}', {
         reason: translateKnown(flowError),
       });
       return { mode, error: degraded, loadingLabel: degraded };
+    }
+    // Cached proxy tiles (TomTom budget spent or upstream failing) are not live.
+    if (liveMode && stale && !fetching) {
+      return {
+        mode,
+        error: null,
+        loadingLabel: t('STALE · Roads: {source} · Flow: cached TomTom tiles', {
+          source: roadSource,
+        }),
+      };
     }
     // TomTom and Hybrid name their geometry; OpenStreetMap keeps its match copy.
     if (liveMode && roadSource === 'TomTom') {
@@ -316,22 +328,22 @@ export function createModel({ state: layerState, services, parts, source }) {
             : t('SIMULATED · Roads: OpenStreetMap · Flow: TomTom (no matches)'),
       };
     }
-    // Keyless simulation - one terse line that names the mode and the remedy
+    // Keyless simulation — one terse line that names the mode and the remedy
     // (owner's copy shape). The chip's own progress text carries "working";
     // this line must never imply a live feed.
     return {
       mode,
       error: null,
       loadingLabel: statusUnavailable
-        ? t('SIMULATED - traffic service unreachable')
-        : t('SIMULATED - add TomTom key for live'),
+        ? t('SIMULATED — traffic service unreachable')
+        : t('SIMULATED — add TomTom key for live'),
     };
   }
 
   /**
    * Apply late-arriving flow data to already-rendered dots without a respawn:
    * color, jam size, and speed update in place; closed roads' dots hide.
-   * Density bunching intentionally waits for the next natural re-render -
+   * Density bunching intentionally waits for the next natural re-render —
    * color and speed are the live signal, dot count is a refinement.
    * @param {string} label - Render log label (for the console trace).
    */
@@ -360,7 +372,7 @@ export function createModel({ state: layerState, services, parts, source }) {
         parts.style.baseDotSize(dot.road?.type, bucket) +
         (bucket === 'jam' ? 1 : 0) +
         parts.style.activeSizeDelta(bucket);
-      // Late flow can move a dot between buckets - keep the preset halo in
+      // Late flow can move a dot between buckets — keep the preset halo in
       // step (no-op writes under the normal profile, whose dots have none).
       if (parts.style.presetProfileActive())
         parts.style.applyOutline(dot.point, bucket);

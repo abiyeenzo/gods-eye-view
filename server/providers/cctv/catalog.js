@@ -28,6 +28,7 @@ import {
   loadNycSourcesFromOpenData,
   loadTorontoSourcesFromOpenData,
   loadFloridaSourcesFromOpenData,
+  loadA22SourcesFromOpenDataHub,
 } from './sources.js';
 
 /** Env kill switch: unset or anything but "0" means enabled. */
@@ -165,6 +166,11 @@ const LIVE_PACKS = [
     enabled: () => envEnabled('CCTV_TAIWAN_ENABLED'),
     load: loadTaiwanSources,
   },
+  {
+    name: 'a22',
+    enabled: () => envEnabled('CCTV_A22_ENABLED'),
+    load: loadA22SourcesFromOpenDataHub,
+  },
 ];
 /**
  * Load CCTV sources from a local JSON file (CCTV_SOURCES_FILE env or default).
@@ -286,7 +292,7 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
     const preferAustin =
       String(process.env.CCTV_PREFER_AUSTIN || '1').trim() !== '0';
     // Live open-data packs load unless a file/env pack is configured and live
-    // packs aren't forced - the same gate that governed the Austin-only fetch
+    // packs aren't forced — the same gate that governed the Austin-only fetch
     // now governs every entry in LIVE_PACKS.
     const needsLiveSources =
       forceAustin || (fromFile.length + fromEnv.length === 0 && preferAustin);
@@ -360,7 +366,7 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
       _cctvTrimmedPacks.set(capped, trimmedPacks);
     } else {
       // Every source came back empty (all live packs timed out / upstream outage)
-      // but a good catalog is already cached - serve it stale rather than blanking
+      // but a good catalog is already cached — serve it stale rather than blanking
       // every CCTV route. Advancing the timestamp waits one TTL before retrying,
       // which (with single-flight) bounds load on a persistently-down upstream.
       console.warn(

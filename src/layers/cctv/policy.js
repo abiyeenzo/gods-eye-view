@@ -60,12 +60,51 @@ export const GEO_PROGRESS_NOTIFY_INTERVAL_MS = 300;
 
 export const GEO_PROGRESS_NOTIFY_BATCH_LIMIT = 10;
 
-// Throttle for placeholder repaints - the projection RAF loop must not
+// View thinning: camera icons show only on or near the screen, and each
+// camera competes for a world-anchored grid cell sized to about VIEW_CELL_PX
+// at its distance from the viewer (in power-of-two metre steps, so a pan
+// keeps the same winners until a camera's distance crosses a step). Cells
+// smaller than VIEW_MIN_CELL_M do not thin:
+// close up every camera shows, co-located ones included.
+
+export const VIEW_CELL_PX = 40;
+
+export const VIEW_MIN_CELL_M = 60;
+
+// Icons this far past the screen edge (fraction of its size) still show, so
+// a pan does not reveal empty ground before the next view pass.
+
+export const VIEW_ICON_MARGIN = 0.5;
+
+// While the camera moves, the view pass reruns at most this often.
+
+export const VIEW_MOTION_REFRESH_MS = 250;
+// A motion tick is skipped unless the camera moved this fraction of its
+// ellipsoid height, or turned this many degrees, since the last pass.
+
+export const VIEW_MOTION_MIN_MOVE_FRACTION = 0.01;
+
+export const VIEW_MOTION_MIN_TURN_DEG = 0.5;
+
+// Motion passes are spaced at least this many times the last pass's cost, so
+// a large catalog spends at most about a tenth of a long move on them.
+
+export const VIEW_MOTION_COST_FACTOR = 10;
+
+// A view camera's geometry is attempted at most this many times per surface
+// regime (a cold elevation cell can leave the first attempt unresolved); the
+// retry runs this long after the drain that left it unresolved.
+
+export const VIEW_GEOMETRY_ATTEMPTS = 2;
+
+export const VIEW_GEOMETRY_RETRY_MS = 1500;
+
+// Throttle for placeholder repaints — the projection RAF loop must not
 // re-fill a 1080p canvas on every frame while a feed image is still loading.
 
 export const PLACEHOLDER_REPAINT_MS = 750;
 
-// v1 key is retired dead data (owner decision #3, §9.3 - WIPE CLEAN, no
+// v1 key is retired dead data (owner decision #3, §9.3 — WIPE CLEAN, no
 // legacy import): kept here only as a documented constant so nothing ever
 // re-reads it by accident. Exported for the unit suite's "v1 is ignored"
 // assertion; there is NO read path for this key anywhere in the module.
@@ -128,7 +167,7 @@ export const PROBE_MIN_RANGE_M = 12;
 
 export const GROUND_PRIOR_INIT_WAIT_MS = 8000;
 
-/** Default calibration offsets - all zeroed, range scale 1x. */
+/** Default calibration offsets — all zeroed, range scale 1x. */
 
 export const DEFAULT_CAMERA_CALIBRATION = Object.freeze({
   offsetNorthM: 0,
@@ -435,14 +474,14 @@ export const PLANE_OUTLINE_COLOR =
   Cesium.Color.fromCssColorString('#6be8ff').withAlpha(0.55);
 
 /**
- * Card budget while the staggered geometry drain is running - the raised
+ * Card budget while the staggered geometry drain is running — the raised
  * 20/28/40 tiers resume when loading completes (see refreshAmbientCards).
  */
 
 export const CCTV_AMBIENT_CARD_DRAIN_CAP = 16;
 
 // Global static-frame pacing (owner finding 3): the pacer ticks at the burst
-// spacing (250 ms) but cardFetchPolicy gates launches - cold fill (selected
+// spacing (250 ms) but cardFetchPolicy gates launches — cold fill (selected
 // cards still missing their FIRST frame) allows up to 4 in-flight fetches at
 // 250 ms spacing; steady state keeps the salvaged Part C gate of at most one
 // request per second with an in-flight fetch blocking the tick, so slow

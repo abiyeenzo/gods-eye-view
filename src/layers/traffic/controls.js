@@ -9,7 +9,6 @@ import {
 } from '../../data/trafficPresetStyle.js';
 import { TRAFFIC_TIMING_ENABLED } from './policy.js';
 import { t, translateKnown } from '../../i18n/index.js';
-import { ICONS } from '../../icons.js';
 
 export function createControls({ state: layerState, services, parts, source }) {
   /** One status line: feed, drawn road source, then degraded-coverage notes. */
@@ -55,13 +54,11 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     name: 'Street Traffic',
 
-    icon: '',
-
-    iconSvg: ICONS.car,
+    icon: '🚗',
 
     source: 'OpenStreetMap / TomTom',
 
-    /** @type {number} Zero - layer is self-managed via camera listener + preRender */
+    /** @type {number} Zero — layer is self-managed via camera listener + preRender */
     updateInterval: 0,
 
     /**
@@ -131,7 +128,7 @@ export function createControls({ state: layerState, services, parts, source }) {
           'Density',
         );
       // Live-mode treatment of roads TomTom has no flow data for:
-      // 'sim' (default) keeps them as today's white ambient dots - colored =
+      // 'sim' (default) keeps them as today's white ambient dots — colored =
       // real data, white = simulation; 'hide' spawns nothing on them (strict
       // data-integrity view). Owner-explorable; re-render applies on the next
       // camera-driven load.
@@ -146,7 +143,7 @@ export function createControls({ state: layerState, services, parts, source }) {
       }
       // Preset-aware dot styling kill switch (owner A/B): 'off' forces the
       // shipped palette under every post-FX preset. Applies immediately via
-      // in-place restyle - no refetch - so A/B legs share identical dots.
+      // in-place restyle — no refetch — so A/B legs share identical dots.
       if (params.presetDots === 'on' || params.presetDots === 'off') {
         if (params.presetDots !== layerState._presetDots) {
           layerState._presetDots = params.presetDots;
@@ -232,7 +229,7 @@ export function createControls({ state: layerState, services, parts, source }) {
           id: `VEH-${String(layerState._dots[i].id).padStart(4, '0')}`,
           type: 'VEH',
         };
-        // Live mode: the detection bracket carries the congestion signal -
+        // Live mode: the detection bracket carries the congestion signal —
         // its canvas sits ABOVE the post-FX chain, so tier colors survive
         // every preset (owner round 2: "bounding boxes do the heavy
         // lifting"). Keyless mode sets no tier: contacts keep the stock
@@ -257,7 +254,7 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     /**
      * Return current layer statistics for UI status chips.
-     * `mode` is the CONFIGURED source - 'live' (a TomTom key is present) or
+     * `mode` is the CONFIGURED source — 'live' (a TomTom key is present) or
      * 'sim' (keyless simulation, which the manager renders as a FALLBACK chip);
      * `error` carries this instant's health, so a live-configured layer whose
      * flow feed went down reads DEGRADED with the reason instead of a stale
@@ -313,6 +310,7 @@ export function createControls({ state: layerState, services, parts, source }) {
         liveMode: layerState._liveMode,
         fetching: loading,
         flowError: layerState._flowError,
+        stale: layerState._flowStale,
         coveragePct: flowCoveragePct,
         statusUnavailable: layerState._flowStatusUnavailable,
         roadSource: layerState._roadSource,
@@ -324,6 +322,20 @@ export function createControls({ state: layerState, services, parts, source }) {
         lastUpdate: layerState._lastUpdate,
         loading,
         mode: feed.mode,
+        // Cached proxy tiles (TomTom budget spent or upstream failing): the
+        // manager reads this as STALE. Any error (flow, roads, detail) reads
+        // DEGRADED instead.
+        stale: Boolean(
+          layerState._liveMode &&
+          layerState._flowStale &&
+          !(
+            layerState._roadError ||
+            layerState._roadWarning ||
+            layerState._detailError ||
+            feed.error
+          ),
+        ),
+        oldestTileAt: layerState._flowOldestTileAt ?? null,
         error:
           layerState._roadError ||
           layerState._roadWarning ||
@@ -343,7 +355,7 @@ export function createControls({ state: layerState, services, parts, source }) {
         // qa-traffic color assertions and the sync-chip mode label below.
         flowBuckets: { ...layerState._bucketCounts },
         closedRoads: layerState._closedRoads,
-        // Jam-viz prototype diagnostics (additive - harness contract untouched).
+        // Jam-viz prototype diagnostics (additive — harness contract untouched).
         heatLines: layerState._heatLineCount,
         jamViz: layerState._jamViz,
         // Preset-styling diagnostics (additive): active style + profile.
@@ -354,8 +366,8 @@ export function createControls({ state: layerState, services, parts, source }) {
             : 'normal',
         // Sync-chip text: shown while busy, and flashed on its own for 1.5 s
         // after each completed load (ui.js _updateTrafficSyncChip semantics).
-        // The settled flash carries NO progress number beside it - this label's
-        // coverage figure is the chip's only percentage - so a label that ends
+        // The settled flash carries NO progress number beside it — this label's
+        // coverage figure is the chip's only percentage — so a label that ends
         // in one had better be the honest one. This is also where LIVE vs
         // SIMULATED mode is surfaced, and it must never imply a live feed the
         // layer does not have.

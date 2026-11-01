@@ -12,16 +12,25 @@
  * route-flight cinematic (`flyRoute`), the way voice's `fly_route` does.
  *
  * Needs no key, no geocoder and no microphone. A route that cannot be found
- * says so - there is never a straight-line stand-in drawn as if it were a
+ * says so — there is never a straight-line stand-in drawn as if it were a
  * route.
  */
 
 import * as Cesium from 'cesium';
 import { roadLabel } from '../../data/routeSteps.js';
-import { t, msg, formatNumber, translateKnown } from '../../i18n/index.js';
+import {
+  t,
+  msg,
+  formatNumber,
+  getLocale,
+  translateKnown,
+} from '../../i18n/index.js';
 import { pointerOwnerName } from '../../data/pointerOwnerNames.js';
-import { formatQuantity } from '../../ui/unitLabels.js';
-import { ICONS } from '../../icons.js';
+import {
+  formatQuantity,
+  quantitySeparator,
+  unitLabel,
+} from '../../ui/unitLabels.js';
 
 export const DIRECTIONS_STEP_OVERLAY_SOURCE_ID = 'directions-step';
 export const DIRECTIONS_STEP_OVERLAY_SOURCE_OPTIONS = Object.freeze({
@@ -32,43 +41,31 @@ export const DIRECTIONS_STEP_OVERLAY_SOURCE_OPTIONS = Object.freeze({
 
 /** Travel modes, keyed by the `/api/route` profile name. */
 export const DIRECTIONS_MODES = Object.freeze({
-  car: Object.freeze({ chip: msg('DRIVE'), word: msg('Drive') }),
-  foot: Object.freeze({ chip: msg('WALK'), word: msg('Walk') }),
-  bike: Object.freeze({ chip: msg('BIKE'), word: msg('Bike') }),
+  car: Object.freeze({ chip: msg('DRIVE'), word: msg('Drive'), icon: '🚗' }),
+  foot: Object.freeze({ chip: msg('WALK'), word: msg('Walk'), icon: '🚶' }),
+  bike: Object.freeze({ chip: msg('BIKE'), word: msg('Bike'), icon: '🚲' }),
 });
 export const DEFAULT_DIRECTIONS_MODE = 'car';
 
 /**
- * The route proxy's refusal texts (server/providers/places/routes.js). They
- * stay English on the wire and in the AI tools; the row shows them translated.
+ * The row error for a failed route request (createDirectionsSource errors),
+ * as English data; the Layers panel shows it translated (ROUTING_ERROR_PATTERNS
+ * in src/ui/statusText.js).
  */
-const ROUTING_REFUSALS = new Set([
-  msg('rate limited'),
-  msg('routing service is rate limited'),
-  msg('route leg too long'),
-  msg('route too long'),
-]);
-
-/** A refusal text from the route proxy in the language; unknown ones as given. */
-export function presentRoutingRefusal(text) {
-  return ROUTING_REFUSALS.has(text) ? t(text) : text;
-}
-
-/** The row text for a failed route request (createDirectionsSource errors). */
 export function presentRoutingFailure(error) {
   if (error?.status === 429) {
     return error.refusal
-      ? t('{error} - try again in a moment', {
-          error: presentRoutingRefusal(error.refusal),
-        })
-      : t('Routing is rate limited - try again in a moment');
+      ? // i18n-ignore: English data, shown through ROUTING_ERROR_PATTERNS
+        `${error.refusal} — try again in a moment`
+      : msg('Routing is rate limited — try again in a moment');
   }
   if (Number.isFinite(error?.status) && error.status > 0)
-    return t('Routing unavailable (HTTP {status})', { status: error.status });
-  return error?.message || t('Routing unavailable');
+    // i18n-ignore: English data, shown through ROUTING_ERROR_PATTERNS
+    return `Routing unavailable (HTTP ${error.status})`;
+  return error?.message || msg('Routing unavailable');
 }
 
-/** Route colour - the annotation palette's cyan, so voice routes and Directions match. */
+/** Route colour — the annotation palette's cyan, so voice routes and Directions match. */
 export const DIRECTIONS_ROUTE_COLOR = '#39d0ff';
 const MARKER_A_COLOR = Cesium.Color.fromCssColorString('#5dff9f');
 const MARKER_B_COLOR = Cesium.Color.fromCssColorString('#ff6b6b');
@@ -76,7 +73,7 @@ const STEP_COLOR = Cesium.Color.WHITE.withAlpha(0.95);
 const STEP_OUTLINE = Cesium.Color.fromCssColorString(DIRECTIONS_ROUTE_COLOR);
 const STEP_PIXEL_SIZE = 8;
 const STEP_SELECTED_PIXEL_SIZE = 13;
-/** Route request timeout (ms) - the proxy itself gives OSRM 12 s. */
+/** Route request timeout (ms) — the proxy itself gives OSRM 12 s. */
 const ROUTE_TIMEOUT_MS = 15_000;
 
 /** Pointer-ownership id while a globe click is placing an endpoint. */
@@ -86,7 +83,7 @@ export const DIRECTIONS_POINTER_OWNER = 'directions';
  * How long to keep re-reading the shared ground floor for a maneuver dot whose
  * cell has not answered yet. The terrain proxy behind that floor can take tens
  * of seconds on a cold cache, so this is a wall-clock budget comfortably past
- * it rather than a handful of quick retries - a dot that resolves late still
+ * it rather than a handful of quick retries — a dot that resolves late still
  * appears. Reroute, CLEAR, disable and destroy all cancel it.
  */
 export const STEP_ANCHOR_DEADLINE_MS = 90_000;
@@ -113,7 +110,8 @@ export const FLIGHT_PROGRESS_MS = 250;
 export function routeDistanceText(meters) {
   if (!Number.isFinite(meters) || meters < 0) return '';
   if (meters < 100) return formatQuantity(Math.round(meters), 'm');
-  if (meters < 1000) return formatQuantity(Math.round(meters / 10) * 10, 'm');
+  const tens = Math.round(meters / 10) * 10;
+  if (tens < 1000) return formatQuantity(tens, 'm');
   const km = meters / 1000;
   return km < 10
     ? formatQuantity(km, 'km', {
@@ -131,12 +129,15 @@ export function routeDistanceText(meters) {
  */
 export function routeDurationText(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) return '';
-  if (seconds < 60) return formatQuantity(Math.round(seconds), 's');
+  const wholeSeconds = Math.round(seconds);
+  if (wholeSeconds < 60) return formatQuantity(wholeSeconds, 's');
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return formatQuantity(minutes, 'min');
   const hours = formatQuantity(Math.floor(minutes / 60), 'h');
   const rest = minutes % 60;
-  return rest ? `${hours}\u00a0${formatQuantity(rest, 'min')}` : hours;
+  if (!rest) return hours;
+  // "1 h 5 min"; Japanese runs the parts together: 1時間5分.
+  return `${hours}${quantitySeparator(unitLabel('h'))}${formatQuantity(rest, 'min')}`;
 }
 
 /** "left", "slightly right", … as it reads inside a maneuver sentence. */
@@ -307,16 +308,24 @@ export function directionsInstruction(step) {
         ? t('Merge onto {road}', values)
         : t('Merge', { context: 'maneuver' });
     case 'on ramp':
-      if (direction)
+      if (modifier === 'left' || modifier === 'right')
         return road
           ? t('Take the ramp on the {direction} onto {road}', values)
           : t('Take the ramp on the {direction}', values);
+      if (direction && modifier !== 'straight')
+        return road
+          ? t('Take the ramp {direction} onto {road}', values)
+          : t('Take the ramp {direction}', values);
       return road ? t('Take the ramp onto {road}', values) : t('Take the ramp');
     case 'off ramp':
-      if (direction)
+      if (modifier === 'left' || modifier === 'right')
         return road
           ? t('Take the exit on the {direction} onto {road}', values)
           : t('Take the exit on the {direction}', values);
+      if (direction && modifier !== 'straight')
+        return road
+          ? t('Take the exit {direction} onto {road}', values)
+          : t('Take the exit {direction}', values);
       return road ? t('Take the exit onto {road}', values) : t('Take the exit');
     case 'roundabout':
     case 'rotary':
@@ -345,9 +354,14 @@ export function directionsInstruction(step) {
       return road
         ? t('Exit the roundabout onto {road}', values)
         : t('Exit the roundabout');
-    case 'use lane':
-      if (direction) {
-        const lane = { road, direction: laneWord(modifier) };
+    case 'use lane': {
+      const side = modifier.includes('left')
+        ? 'left'
+        : modifier.includes('right')
+          ? 'right'
+          : '';
+      if (side) {
+        const lane = { road, direction: laneWord(side) };
         return road
           ? t('Use the {direction} lane onto {road}', lane)
           : t('Use the {direction} lane', lane);
@@ -355,6 +369,7 @@ export function directionsInstruction(step) {
       return road
         ? t('Continue onto {road}', values)
         : t('Continue', { context: 'maneuver' });
+    }
     default:
       return road
         ? t('Continue onto {road}', values)
@@ -392,6 +407,16 @@ export function normalizeDirectionsParams(params = {}) {
 }
 
 /**
+ * A travel-mode word inside a sentence: lower case, except in German, where
+ * the words are nouns and keep their capital ("Auto", "Fahrrad").
+ * @param {string} word Translated mode word.
+ * @returns {string}
+ */
+function modeWordInSentence(word) {
+  return getLocale() === 'de' ? word : word.toLowerCase();
+}
+
+/**
  * Row chips for a given state. Pure so the chip logic is testable without a DOM.
  * @param {{mode:string, armed:null|'a'|'b', a:object|null, b:object|null, status:string, route:object|null}} state
  * @returns {{chips: object[], legend: object[]}}
@@ -404,9 +429,9 @@ export function directionsRowControls(state) {
     label: t(spec.chip),
     active: mode === id,
     state: mode === id ? 'active' : 'idle',
-    title: t('{mode} - reroute for {modeLower}', {
+    title: t('{mode} — reroute for {modeLower}', {
       mode: t(spec.word),
-      modeLower: t(spec.word).toLowerCase(),
+      modeLower: modeWordInSentence(t(spec.word)),
     }),
     params: { mode: id },
   }));
@@ -489,7 +514,7 @@ export const POINTER_TOOL_EXITS = Object.freeze({
  *
  * The claim failing used to be silent: the chip simply did not light and the
  * operator was left to guess which of the open tools was eating the click
- * (owner field test - he thought Directions was broken). So the message names
+ * (owner field test — he thought Directions was broken). So the message names
  * the tool and says how to put it down. Pure.
  * @param {string|null} owner Current pointer-owner id.
  * @param {'a'|'b'} which Endpoint that was being armed.
@@ -501,11 +526,11 @@ export function pointerBlockedMessage(owner, which) {
   const endpoint = which === 'b' ? 'B' : 'A';
   const known = POINTER_TOOL_EXITS[id];
   if (!known)
-    return t('{name} is active - turn {name} off, then set {endpoint}', {
+    return t('{name} is active — turn {name} off, then set {endpoint}', {
       name: translateKnown(pointerOwnerName(id)),
       endpoint,
     });
-  return t('{name} is active - {leave}, then set {endpoint}', {
+  return t('{name} is active — {leave}, then set {endpoint}', {
     name: t(known.name),
     leave: t(known.leave),
     endpoint,
@@ -532,7 +557,7 @@ export function stepMarkerIndices(steps) {
  * Denver (ground ~1.6 km) puts it a kilometre and a half under the city: on an
  * oblique view it sits visibly off its own junction. So the dot reads the same
  * shared ground floor every other anchored point in the app reads
- * (`cachedGroundFloor` - the rendered mesh cell on the photoreal stack, the
+ * (`cachedGroundFloor` — the rendered mesh cell on the photoreal stack, the
  * Re:Earth DEM cell on the keyless terrain stacks) and lifts clear of it.
  * Until that cell is warm there is no honest height, and the caller keeps the
  * dot hidden rather than drawing it somewhere wrong.
@@ -578,7 +603,7 @@ export function directionsStepList({
   const items = steps.map((step, index) => ({
     id: `step-${index}`,
     ordinal: index + 1,
-    lead: routeDistanceText(step.distanceM) || '-',
+    lead: routeDistanceText(step.distanceM) || '—',
     text: directionsInstruction(step),
     active: index === active,
     current: Number.isInteger(flightStep) && index === flightStep,
@@ -644,7 +669,9 @@ export function directionsStats(state) {
     return {
       count: route?.steps.length || 0,
       lastUpdate,
-      error: t('Another map tool is using clicks - close it, then SET A again'),
+      error: msg(
+        'Another map tool is using clicks — close it, then SET A again',
+      ),
       status: 'empty',
       source,
     };
@@ -663,7 +690,7 @@ export function directionsStats(state) {
     return {
       count: 0,
       lastUpdate,
-      error: error || t('No route found'),
+      error: error || msg('No route found'),
       status: 'empty',
       source,
     };
@@ -1145,13 +1172,10 @@ export function createDirectionsLayer({ services, source }) {
         clearRouteGraphics();
         _status = 'error';
         _error =
-          payload?.error === 'no route found'
-            ? t('No route found between A and B')
-            : payload?.error
-              ? t('Routing failed: {error}', {
-                  error: presentRoutingRefusal(payload.error),
-                })
-              : t('No route found between A and B');
+          // i18n-ignore: English data, shown through ROUTING_ERROR_PATTERNS
+          payload?.error && payload.error !== 'no route found'
+            ? `Routing failed: ${payload.error}`
+            : msg('No route found between A and B');
         return;
       }
       _route = route;
@@ -1168,9 +1192,9 @@ export function createDirectionsLayer({ services, source }) {
       // happened instead.
       _error =
         error?.name === 'AbortError'
-          ? t('Routing timed out')
+          ? msg('Routing timed out')
           : error?.name === 'TypeError'
-            ? t('Routing unavailable - no response from the routing service')
+            ? msg('Routing unavailable — no response from the routing service')
             : presentRoutingFailure(error);
     } finally {
       clearTimeout(timer);
@@ -1195,7 +1219,7 @@ export function createDirectionsLayer({ services, source }) {
    * Every layer binds its own handler to the same canvas, and they all run
    * inside ONE browser event. Releasing the claim the instant this layer places
    * an endpoint hands the rest of that same click to every ambient handler
-   * registered after this one - placing A on top of a bikeshare station also
+   * registered after this one — placing A on top of a bikeshare station also
    * deselected the station. A timer, not a microtask: a microtask checkpoint
    * runs between two DOM listeners, which is exactly the gap this closes.
    */
@@ -1250,7 +1274,7 @@ export function createDirectionsLayer({ services, source }) {
    *
    * Placement is a TOOL: it takes the pointer so no ambient layer also selects
    * whatever happened to be under the click. If another tool already holds it,
-   * this refuses - nothing is armed and the row says why.
+   * this refuses — nothing is armed and the row says why.
    * @param {null|'a'|'b'} which
    * @returns {boolean} Whether the layer is armed after this call.
    */
@@ -1259,7 +1283,7 @@ export function createDirectionsLayer({ services, source }) {
       disarm();
       return false;
     }
-    // A claim does not stack, not even under the same name - two live instances
+    // A claim does not stack, not even under the same name — two live instances
     // of one tool are two owners. So re-arming for the other endpoint reuses the
     // lease already held instead of asking for a second one.
     if (!services.input.isLeaseCurrent(_pointerClaim)) {
@@ -1268,7 +1292,7 @@ export function createDirectionsLayer({ services, source }) {
         _armed = null;
         _pointerBlocked = true;
         // The row already says it, but the row is not where the operator is
-        // looking after pressing a chip - say it where the app says everything.
+        // looking after pressing a chip — say it where the app says everything.
         const message = pointerBlockedMessage(
           services.input.pointerOwner(),
           which,
@@ -1310,7 +1334,7 @@ export function createDirectionsLayer({ services, source }) {
   }
 
   /**
-   * Stop the route flight THIS layer started - and only that one. The camera is
+   * Stop the route flight THIS layer started — and only that one. The camera is
    * shared: by the time CLEAR is pressed the user may have grabbed it, voice may
    * have flown somewhere, or a tracked aircraft may own it. Cancelling by id
    * leaves every one of those alone.
@@ -1416,8 +1440,8 @@ export function createDirectionsLayer({ services, source }) {
   /**
    * Where a step's card should hang, or null while that is not yet known.
    *
-   * Departure and arrival have no maneuver dot - the A and B markers stand for
-   * them - and an intermediate dot exists only once its ground cell has
+   * Departure and arrival have no maneuver dot — the A and B markers stand for
+   * them — and an intermediate dot exists only once its ground cell has
    * answered. So the anchor is resolved from the step's own coordinates against
    * the same shared floor, and a step whose cell is still cold has no anchor at
    * all rather than one at sea level.
@@ -1551,8 +1575,7 @@ export function createDirectionsLayer({ services, source }) {
   const directionsLayer = {
     id: 'directions',
     name: 'Directions',
-    icon: '',
-    iconSvg: ICONS.compass,
+    icon: '🧭',
     source: 'OSM routing',
     updateInterval: 0,
 
@@ -1681,8 +1704,8 @@ export function createDirectionsLayer({ services, source }) {
     },
 
     /**
-     * Receive the UI shell's camera seams. FLY goes through `runNavigation` -
-     * the same immediate-navigation facade voice destinations use - so the route
+     * Receive the UI shell's camera seams. FLY goes through `runNavigation` —
+     * the same immediate-navigation facade voice destinations use — so the route
      * dolly is one more caller of the single camera owner rather than a second
      * one. `floorFn`/`warmFn` are the shared ground floor the dolly flies over.
      * `showToast` is the app's own toast, so a refusal is said where the rest of

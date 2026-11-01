@@ -35,7 +35,7 @@ export function createVesselState({ source, services }) {
 
   /**
    * True once the EGM96 geoid grid has loaded (fire-and-forget warm at
-   * enable(), aircraft idiom - see militaryFlights.js). Gates all synchronous
+   * enable(), aircraft idiom — see militaryFlights.js). Gates all synchronous
    * geoidHeight() reads so a poll can never throw pre-load.
    * @type {boolean}
    */
@@ -64,6 +64,8 @@ export function createVesselState({ source, services }) {
     /** Test-only key target paired with interactionHandlerFactory. */
     interactionKeyTarget: null,
     preRenderRemover: null,
+    /** Pending timer that renders one frame after a cadence-skipped pass. */
+    trailingVisibilityTimer: null,
     lastVisibilityUpdate: 0,
     lastFocusUpdate: 0,
     /** Sprites whose animated emphasis remains outside the 1.0 deadband. */
@@ -76,7 +78,7 @@ export function createVesselState({ source, services }) {
     trailPositions: [],
     /** @type {string|null} MMSI that owns the active selected-vessel trail. */
     trailMmsi: null,
-    /** @type {number} Monotonic token - invalidates in-flight backfill responses */
+    /** @type {number} Monotonic token — invalidates in-flight backfill responses */
     trailBackfillToken: 0,
     trailAbort: null,
   };

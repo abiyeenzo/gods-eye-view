@@ -4,7 +4,7 @@
  * One plain-data entry per layer declares each voice capability separately:
  * the spoken aliases the action runner accepts, `toggle` (set_layer_visibility),
  * `context` (registers in-view entity context), `track` (track_entity), and
- * `query` - the analyst_query fields with type and unit - or `noQuery`, the
+ * `query` — the analyst_query fields with type and unit — or `noQuery`, the
  * reason it has none. No layer has a voice timeline yet.
  *
  * Both the server tool builder (`actionSchemas.js` → the Realtime tool JSON)
@@ -56,6 +56,20 @@ const layers = [
     ],
     context: false,
     noQuery: 'navigation-integrity cells; no countable analyst records',
+  },
+  {
+    id: 's2-ghostmaps',
+    aliases: [
+      's2 ghostmaps',
+      'ghost maps',
+      'ghostmaps',
+      's2 underground',
+      's2 intel',
+      'intel picture',
+      'common intelligence picture',
+    ],
+    context: false,
+    noQuery: 'published third-party intel placemarks; not analyst records',
   },
   {
     id: 'flights',
@@ -511,6 +525,8 @@ const SELF_EVIDENT_IDS = new Set([
   'radio',
   'wind',
   'directions',
+  // The brand is already the layer id; all spoken aliases remain accepted.
+  's2-ghostmaps',
 ]);
 
 /**
@@ -525,7 +541,7 @@ export function voiceLayerAliasHint() {
       entry.toggle && entry.aliases.length && !SELF_EVIDENT_IDS.has(entry.id),
   )
     .map((entry) => `${entry.aliases.slice(0, 2).join('/')}→${entry.id}`)
-    .join('; ');
+    .join(';');
 }
 
 /** Field names that already carry their unit (altitudeM, speedKts, …). */

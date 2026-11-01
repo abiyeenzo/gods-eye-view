@@ -4,7 +4,7 @@ const PHOTON_ENDPOINT = 'https://photon.komoot.io/api/';
 /** Photon is a courtesy service; fail fast rather than hold the search open. */
 const PHOTON_TIMEOUT_MS = 6000;
 
-/** Bounded memo - a search box re-issues the same query on every keystroke. */
+/** Bounded memo — a search box re-issues the same query on every keystroke. */
 const PHOTON_CACHE_MAX = 64;
 
 /**
@@ -39,7 +39,7 @@ const PHOTON_TYPE_TO_GOOGLE = Object.freeze({
  *
  * - Too coarse: a park or lake that arrives without an area type frames at
  *   building range, which is the exact bug `geocodeNavigationMode`'s area types
- *   exist to prevent - searching "Ho Guom" put the camera 26 m over the water.
+ *   exist to prevent — searching "Ho Guom" put the camera 26 m over the water.
  * - Too broad: Photon classifies a town square as `type: 'locality'`, so
  *   deferring to the coarse class frames Times Square as if it were a city.
  *   The explicit `null` below is what stops that.
@@ -69,7 +69,7 @@ const OSM_TAG_TO_GOOGLE = Object.freeze({
 });
 
 /**
- * OSM keys whose features are areas whatever their value - lakes, rivers,
+ * OSM keys whose features are areas whatever their value — lakes, rivers,
  * peaks, woods, protected land. Photon reports every one of these with
  * `type: 'other'`, so the key is the only signal that they are not buildings.
  */
@@ -123,7 +123,7 @@ export function photonExtentToBounds(extent) {
 }
 
 /**
- * Human label for a Photon feature - its name plus the coarsest containing
+ * Human label for a Photon feature — its name plus the coarsest containing
  * places that are not already in the name, mirroring the single-line address
  * Google's `formatted_address` provides.
  * @param {object} properties - Photon feature `properties`.
@@ -182,13 +182,13 @@ export function normalizePhotonFeature(feature) {
  * Photon request URL for one query.
  *
  * `bias` is the SAME `"swLat,swLng|neLat,neLng"` string `viewportBias()` builds
- * for the Google call, so the two paths cannot drift apart - but it is sent as
+ * for the Google call, so the two paths cannot drift apart — but it is sent as
  * Photon's `lat`/`lon` PROXIMITY bias, not as `bbox`.
  *
  * That distinction is the whole correctness of this function. Google's `bounds`
  * prefers results inside the box and still returns ones outside it; Photon's
  * `bbox` is a hard filter. Translating the rectangle literally makes every
- * search for somewhere off-screen return nothing - searching "Ho Guom, Ha Noi"
+ * search for somewhere off-screen return nothing — searching "Ho Guom, Ha Noi"
  * while looking at Austin answers `features: []`. Sent as `lat`/`lon` it finds
  * Hoan Kiem Lake, while "Sixth Street" still resolves to Austin's over Austin
  * and to England's over London. Soft bias is the semantics Google gives, so
@@ -206,12 +206,27 @@ export function photonSearchUrl(
   url.searchParams.set('limit', String(limit));
 
   const corners = String(bias ?? '').split('|');
-  if (corners.length === 2) {
-    const [swLat, swLng] = corners[0].split(',').map(Number);
-    const [neLat, neLng] = corners[1].split(',').map(Number);
-    if ([swLat, swLng, neLat, neLng].every(Number.isFinite)) {
+  const tokens = corners.flatMap((corner) => corner.split(','));
+  if (
+    corners.length === 2 &&
+    corners.every((corner) => corner.split(',').length === 2) &&
+    tokens.every((token) => token.trim() !== '')
+  ) {
+    const [swLat, swLng, neLat, neLng] = tokens.map(Number);
+    if (
+      [swLat, swLng, neLat, neLng].every(Number.isFinite) &&
+      Math.abs(swLat) <= 90 &&
+      Math.abs(neLat) <= 90 &&
+      swLat <= neLat &&
+      Math.abs(swLng) <= 180 &&
+      Math.abs(neLng) <= 180
+    ) {
+      const midpoint = (swLng + neLng + (swLng > neLng ? 360 : 0)) / 2;
       url.searchParams.set('lat', String((swLat + neLat) / 2));
-      url.searchParams.set('lon', String((swLng + neLng) / 2));
+      url.searchParams.set(
+        'lon',
+        String(midpoint > 180 ? midpoint - 360 : midpoint),
+      );
     }
   }
   return url.toString();
@@ -266,6 +281,67 @@ export function selectPhotonFeature(
   return null;
 }
 
+/** Short country names people type that Photon's fields don't carry. */
+const COUNTRY_ALIASES = Object.freeze({ US: 'usa', GB: 'uk' });
+
+/**
+ * OSM keys of settlements and administrative areas. Among candidates that fit
+ * a "place, region" query, these are what the region names a place in: a cafe
+ * called "Paris" in Lyon is in France too, but "Paris, France" means the city.
+ */
+const SETTLEMENT_OSM_KEYS = Object.freeze(new Set(['place', 'boundary']));
+
+/** The region part of a "place, region" query, normalized ('' if none). */
+function queryRegion(query) {
+  const [, ...rest] = String(query ?? '').split(',');
+  return normalizeToponym(rest.join(' '));
+}
+
+/**
+ * For a "place, region" query, pick the candidate named for the place that
+ * actually lies in the region. "Paris, Texas" is also the name of a pub in
+ * Budapest: matched as one name it beat the town, so the region has to be
+ * checked against where each candidate is, not against its name. When several
+ * candidates fit, a settlement or administrative area wins over a POI.
+ * @param {object[]} features - Photon features, in the order returned.
+ * @param {string} query - The query as typed.
+ * @returns {?object} null when the query names no region or nothing fits.
+ */
+export function selectQualifiedFeature(features, query) {
+  const [headText] = String(query ?? '').split(',');
+  const region = queryRegion(query);
+  const head = normalizeToponym(headText);
+  if (!head || !region) return null;
+  const words = region.split(' ');
+  const qualified = (Array.isArray(features) ? features : []).filter(
+    (feature) => {
+      const properties = feature?.properties ?? {};
+      const name = normalizeToponym(properties.name);
+      // Exactly the place: "Paris Gare de Lyon" is in France too, but it
+      // is not what "Paris, France" asks for.
+      if (name !== head) return false;
+      const where = ` ${normalizeToponym(
+        [
+          properties.city,
+          properties.county,
+          properties.state,
+          properties.country,
+          properties.countrycode,
+          COUNTRY_ALIASES[String(properties.countrycode ?? '').toUpperCase()],
+        ].join(' '),
+      )} `;
+      return words.every((word) => where.includes(` ${word} `));
+    },
+  );
+  return (
+    qualified.find((feature) =>
+      SETTLEMENT_OSM_KEYS.has(feature?.properties?.osm_key),
+    ) ??
+    qualified[0] ??
+    null
+  );
+}
+
 /** Evict the oldest memo entries until the cache is within its cap. */
 function trimPhotonCache(cache) {
   while (cache.size > PHOTON_CACHE_MAX) {
@@ -282,7 +358,7 @@ function trimPhotonCache(cache) {
  * A caller that remembers negative results needs both halves. "Photon has no
  * such place" is a verdict and may be cached; "Photon did not reply" is a
  * network blip, and caching THAT keeps the app answering "not found" from
- * memory long after the network came back - a whole session, for a key that
+ * memory long after the network came back — a whole session, for a key that
  * would now resolve. Conflating the two is the defect this app already had to
  * repair once in the Overpass disk cache, where refusals were persisted with
  * normal data TTLs.
@@ -339,17 +415,33 @@ export async function geocodeKeylessWithOutcome(
 
   // Bias decides WHICH match wins, never WHAT counts as a match. Photon scores
   // proximity against the name, so from Austin "Huế" came back as Hutto, Texas
-  // and "Hạ Long" as Long Branch - near misses beating the exact name by
+  // and "Hạ Long" as Long Branch — near misses beating the exact name by
   // distance alone. Measured over twelve Vietnamese place names, three resolved
   // to the wrong continent. So a biased answer is only accepted when it leads
   // with the name asked for; otherwise the same query runs unbiased, which is
   // what a user searching for somewhere off-screen meant in the first place.
+  // A query naming a region is answered nearby only by a match inside it.
+  // A nearby place whose own name has a comma ("Bed, Bath & Beyond") and
+  // equals the whole query is kept as the last choice, after the region
+  // checks of both passes.
   let feature = null;
+  let nearbyNameMatch = null;
   let everyAskAnswered = true;
   if (bias) {
     const biased = await ask(photonSearchUrl(trimmed, { bias, endpoint }));
     if (biased === null) everyAskAnswered = false;
-    else feature = selectPhotonFeature(biased, normalizeToponym(trimmed));
+    else if (queryRegion(trimmed)) {
+      feature = selectQualifiedFeature(biased, trimmed);
+      // Exactly the whole query: "Springfield IL Auto" only starts with it.
+      const whole = normalizeToponym(trimmed);
+      nearbyNameMatch =
+        biased.find(
+          (candidate) =>
+            normalizeToponym(candidate?.properties?.name) === whole,
+        ) ?? null;
+    } else {
+      feature = selectPhotonFeature(biased, normalizeToponym(trimmed));
+    }
   }
 
   signal?.throwIfAborted();
@@ -364,9 +456,12 @@ export async function geocodeKeylessWithOutcome(
       // the thing being searched for; the tail only says where to look.
       const head = normalizeToponym(trimmed.split(',')[0]);
       feature =
+        selectQualifiedFeature(anywhere, trimmed) ||
+        nearbyNameMatch ||
         selectPhotonFeature(anywhere, head, { allowContains: true }) ||
         anywhere[0];
     }
+    if (!feature) feature = nearbyNameMatch;
   }
 
   signal?.throwIfAborted();

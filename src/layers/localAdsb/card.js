@@ -2,7 +2,7 @@ import { AIRCRAFT_CLASS_LABELS } from '../../data/aircraftClass.js';
 import { formatNumber, t, tn } from '../../i18n/index.js';
 import { BAND_LABELS, LOCAL_ADSB_COLOR, SOURCE_LABELS } from './policy.js';
 
-const DASH = '-';
+const DASH = '—';
 
 function rounded(value, digits = 0) {
   if (!Number.isFinite(value)) return null;
@@ -152,7 +152,7 @@ export function localAdsbCardModel(
       t('ALT {altitude} FT · GS {speed} KT · TRK {track}', {
         altitude: grouped(altitude),
         speed: speed === null ? DASH : speed,
-        track: track === null ? DASH : `${track}°`,
+        track: track === null ? DASH : `${track % 360}°`,
       }),
       vertical === null
         ? t('V/S {rate}', { rate: DASH })

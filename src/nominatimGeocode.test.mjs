@@ -1,4 +1,4 @@
-// NOMINATIM RESULT MAPPING - what counts as a usable hit.
+// NOMINATIM RESULT MAPPING — what counts as a usable hit.
 //
 // Every numeric field arrives as a string and may be absent or nonsense, and
 // `Number(null)` is 0: a hit with no coordinates read as (0, 0) would fly the
@@ -172,4 +172,13 @@ test('a viewport hint is sent only when every edge is a real coordinate', () => 
       null,
       `${JSON.stringify(bounds)} must not become a viewbox`,
     );
+});
+
+test('wrapped viewports omit the Nominatim bias without rejecting the search', () => {
+  assert.equal(nominatimViewboxFromBounds('-20,170|-10,-171'), null);
+  assert.equal(nominatimViewboxFromBounds('50,175|60,-165'), null);
+  assert.equal(
+    nominatimViewboxFromBounds('-20,170|-10,180'),
+    '170,-10,180,-20',
+  );
 });

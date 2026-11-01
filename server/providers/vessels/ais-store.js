@@ -4,7 +4,7 @@ export const AISSTREAM_STALE_MS = 30 * 60 * 1000;
 // Per-MMSI recent-path ring buffers (PRD WS-F F3). Float32 lat/lon (~1m
 // precision, fine for 25m thinning) + Uint32 epoch seconds ≈ 12B/sample;
 // 64 samples × 50k MMSIs worst case ≈ 38MB. Tracks exist only while the dev
-// server runs - this is "recent path", not voyage history.
+// server runs — this is "recent path", not voyage history.
 const AIS_TRACK_SAMPLES = 64;
 const AIS_TRACK_MIN_GAP_SEC = 30;
 const AIS_TRACK_MIN_MOVE_M = 25;
@@ -22,7 +22,7 @@ const _aisStreamTrackPending = new Map();
  *
  * The return value is the feed's ONLY liveness proof, so it is true strictly
  * when the envelope carried a real AIS record. Malformed frames and error
- * envelopes never reach here - the adapter classifies those - and a JSON
+ * envelopes never reach here — the adapter classifies those — and a JSON
  * object without an MMSI proves nothing about the feed.
  *
  * @param {Object} envelope Parsed, non-error AIS envelope.
@@ -43,14 +43,55 @@ export function ingestAisStreamEnvelope(envelope) {
   if (!mmsi) return false;
 
   if (messageType === 'ShipStaticData' || messageType === 'StaticDataReport') {
+    const previous = _aisStreamStatic.get(mmsi) || {};
+    const live = _aisStreamVessels.get(mmsi);
+    const liveName = live?.name === `MMSI ${mmsi}` ? '' : live?.name;
+    const fields =
+      messageType === 'StaticDataReport'
+        ? {
+            Name:
+              message.ReportA?.Valid === false
+                ? undefined
+                : message.ReportA?.Name,
+            Type:
+              message.ReportB?.Valid === false
+                ? undefined
+                : message.ReportB?.ShipType,
+          }
+        : message;
+    // Static reports may be partial (including Class B's separate A/B parts).
+    // Keep known values in the cache as well as in the current live row.
     const staticData = {
-      name: vesselNameFromAis(metadata, message, _aisStreamStatic.get(mmsi)),
-      type: vesselTypeFromAis(message, _aisStreamStatic.get(mmsi)),
-      destination: stringValue(message.Destination),
-      imo: stringValue(message.ImoNumber ?? message.IMO),
+      // The envelope repeats a cached name even on Class B's type-only part.
+      // Only an actual static name report replaces a known live name.
+      name:
+        stringValue(fields.Name ?? fields.ShipName) ||
+        liveName ||
+        previous.name ||
+        stringValue(metadata.ShipName),
+      type:
+        staticCode(fields.Type ?? fields.ShipType) ||
+        staticCode(live?.type) ||
+        staticCode(previous.type) ||
+        '',
+      destination:
+        stringValue(fields.Destination) ||
+        live?.destination ||
+        previous.destination ||
+        '',
+      imo:
+        staticCode(fields.ImoNumber ?? fields.IMO) ||
+        staticCode(live?.imo) ||
+        staticCode(previous.imo) ||
+        '',
     };
     _aisStreamStatic.set(mmsi, staticData);
     mergeAisStaticIntoLiveVessel(mmsi, staticData);
+    // AISStream repeats the last known position in a static message's
+    // MetaData, but the message has no speed, course or heading and is not a
+    // new fix. Rebuilding a tracked vessel from it would blank its motion and
+    // restamp its position time, so only merge the static fields.
+    if (_aisStreamVessels.has(mmsi)) return true;
   }
 
   const lat = numberValue(
@@ -78,7 +119,7 @@ export function ingestAisStreamEnvelope(envelope) {
     last_position_UTC: normalizeAisTimestamp(
       metadata.time_utc ?? metadata.TimeUtc,
     ),
-    // Use the AIS message's own report time, not server ingest wall-clock -
+    // Use the AIS message's own report time, not server ingest wall-clock —
     // trail spacing and dead reckoning depend on true fix epochs.
     last_position_epoch: aisEpochSeconds(metadata.time_utc ?? metadata.TimeUtc),
     _updatedAt: Date.now(),
@@ -180,7 +221,7 @@ export function readAisTrack(mmsi) {
   return samples;
 }
 
-/** Equirectangular distance approximation - plenty for 25m thinning. */
+/** Equirectangular distance approximation — plenty for 25m thinning. */
 function approxMetersBetween(lat1, lon1, lat2, lon2) {
   const dLat = (lat2 - lat1) * 111320;
   const dLon =
@@ -191,12 +232,10 @@ function approxMetersBetween(lat1, lon1, lat2, lon2) {
 function mergeAisStaticIntoLiveVessel(mmsi, staticData) {
   const existing = _aisStreamVessels.get(mmsi);
   if (!existing) return;
-  if (staticData.name && (!existing.name || existing.name === `MMSI ${mmsi}`))
-    existing.name = staticData.name;
-  if (staticData.type && !existing.type) existing.type = staticData.type;
-  if (staticData.destination && !existing.destination)
-    existing.destination = staticData.destination;
-  if (staticData.imo && !existing.imo) existing.imo = staticData.imo;
+  if (staticData.name) existing.name = staticData.name;
+  if (staticData.type) existing.type = staticData.type;
+  if (staticData.destination) existing.destination = staticData.destination;
+  if (staticData.imo) existing.imo = staticData.imo;
 }
 
 function vesselNameFromAis(metadata, message, staticData = {}) {
@@ -264,6 +303,12 @@ export function newestAisPositionAt(rows) {
 function stringValue(value) {
   if (value === undefined || value === null) return '';
   return String(value).trim();
+}
+
+// AIS uses zero for unavailable ship type and IMO, not as a replacement value.
+function staticCode(value) {
+  const number = numberValue(value);
+  return Number.isInteger(number) && number > 0 ? String(number) : '';
 }
 
 function numberValue(value) {

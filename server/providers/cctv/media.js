@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import { hashSeed, escapeXml, pinnedCameraUrl } from './normalize.js';
 import {
+  A22_IMAGE_ORIGIN,
   CALGARY_IMAGE_ORIGIN,
   CCTV_FRAME_FETCH_TIMEOUT_MS,
   CCTV_FRAME_MAX_BODY_BYTES,
@@ -374,7 +375,7 @@ async function readCappedResponseBytes(upstream, maxBytes) {
   }
   // No async iterator: stream through a reader so the cap still applies while
   // reading. A body that cannot be streamed at all is refused rather than
-  // buffered uncapped - the helper's whole contract is the cap.
+  // buffered uncapped — the helper's whole contract is the cap.
   const reader =
     typeof upstream.body.getReader === 'function'
       ? upstream.body.getReader()
@@ -528,6 +529,7 @@ for (const prefix of [
   HK_IMAGE_ORIGIN,
   KING_COUNTY_IMAGE_ORIGIN,
   WSDOT_IMAGE_ORIGIN,
+  A22_IMAGE_ORIGIN,
 ]) {
   const host = new URL(prefix).hostname;
   CCTV_PINNED_PREFIXES_BY_HOST.set(host, [

@@ -11,6 +11,7 @@ import {
 } from '../../data/militaryAwarenessEngine.js';
 import { bearingBetweenCoordinates } from '../../cockpitMath.js';
 import { AWARENESS_PAGE_SIZE, CONTEXT_RIM_HEIGHT_M } from './policy.js';
+import { formatAwarenessDirection } from './presentation.js';
 
 export function createRendering({
   state: layerState,
@@ -225,12 +226,12 @@ export function createRendering({
           : null;
       const bearingText = Number.isFinite(bearing)
         ? t('BRG {value}°', {
-            value: String(Math.round(bearing)).padStart(3, '0'),
+            value: formatAwarenessDirection(bearing),
           })
-        : t('BRG -');
+        : t('BRG —');
       const courseText = Number.isFinite(item.track)
         ? ` · ${t('CRS {value}°', {
-            value: String(Math.round(item.track)).padStart(3, '0'),
+            value: formatAwarenessDirection(item.track),
           })}`
         : '';
       marker._label.textContent = `${label} · ${formatAwarenessDistance(item.distanceM)}\n${bearingText}${courseText}`;
@@ -269,7 +270,7 @@ export function createRendering({
         for (const entity of layerState.visual.entities)
           entity.position.setValue(groundCenter);
         Cesium.Cartesian3.clone(groundCenter, layerState.visual.center);
-        // Content actually changed - buy exactly one frame instead of holding.
+        // Content actually changed — buy exactly one frame instead of holding.
         governorRequestRender('awareness-visual');
       }
       return;

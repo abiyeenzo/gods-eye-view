@@ -86,6 +86,9 @@ export async function _restoreContextSession({
         throw error;
       }
     }
+    // Clear All may have run while Contacts settled. It owns the selection
+    // now, so the snapshot must not come back behind it.
+    if (restoreState.cancelled) return;
     await this._dataManager.restoreEnabledLayerIds(
       restoreState.enabledLayerIds,
       {
@@ -160,7 +163,7 @@ export async function _restoreContextSession({
  * mode has to be read before the teardown, but a second request arriving
  * while the first reinstatement is mid-activation reads `_contextMode` as
  * null and inherits nothing, so two overlapping cancellations still land on
- * OFF - and the only fix is a cross-transaction "logical prior mode" chain,
+ * OFF — and the only fix is a cross-transaction "logical prior mode" chain,
  * which is new shared mutable state read while an earlier transaction is
  * still awaiting. That trades a rare wrong resting state for a permanent
  * interleaving hazard.

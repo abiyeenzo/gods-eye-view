@@ -53,7 +53,7 @@ page.on('response', (response) => {
 });
 
 const check = (name, passed, detail) => {
-  console.log(`  [${passed ? 'PASS' : 'FAIL'}] ${name}${detail ? ` - ${detail}` : ''}`);
+  console.log(`  [${passed ? 'PASS' : 'FAIL'}] ${name}${detail ? ` — ${detail}` : ''}`);
   if (!passed) failures.push(name);
 };
 
@@ -680,7 +680,7 @@ try {
     const blockerId = '__qa_slow_contacts_sibling__';
     const gateTimeoutMs = 5_000;
     // The transition settles behind real dependency enables (network-bound), so its
-    // guard matches the harness's other network waits - a hang stop, not a budget.
+    // guard matches the harness's other network waits — a hang stop, not a budget.
     const settleTimeoutMs = 60_000;
     let releaseDisable = () => {};
     let reportDisableStarted = () => {};
@@ -726,7 +726,7 @@ try {
         return {
           disableObserved: false,
           beforeId: before?.icao24 || null,
-          timeoutReason: `QA blocker disable() never started within ${gateTimeoutMs}ms - `
+          timeoutReason: `QA blocker disable() never started within ${gateTimeoutMs}ms — `
             + 'the Contacts transition never tore its sibling down, so the pending-window '
             + 'probe could not be exercised',
           transitionSettled: abandoned.settled,
@@ -770,7 +770,7 @@ try {
         blockerEffectivelyOff: !dataManager.isEffectivelyEnabled(blockerId),
       };
     } finally {
-      // Never leave the injected layer (or a gated disable) behind - a failed
+      // Never leave the injected layer (or a gated disable) behind — a failed
       // probe must not poison the checks that run after it.
       releaseDisable();
       if (!deferCleanup && dataManager.layers.has(blockerId)) {
@@ -805,7 +805,7 @@ try {
       && preselectedContactAdoption.blockerEffectivelyOff,
     JSON.stringify(preselectedContactAdoption),
   );
-  // The slow thing in the field is the FETCH, so that is what this holds - the
+  // The slow thing in the field is the FETCH, so that is what this holds — the
   // REAL militaryInstallations module runs throughout and reports its own
   // getStats(). An earlier cut stubbed `enable` and `getStats` instead. Both
   // were wrong, and provably so:
@@ -814,7 +814,7 @@ try {
   //     owns the first fetch"), so gating it blocked the Contacts activation
   //     that brings the PANEL up. The scenario then sampled markup an earlier
   //     scenario had left behind, which is why it read a stale `0`.
-  //   * The panel does not observe a `getStats` stub in this scenario at all -
+  //   * The panel does not observe a `getStats` stub in this scenario at all —
   //     verified by making the stub report an ANSWERED source mid-window and
   //     watching every assertion stay green. A check written against a stub the
   //     panel cannot see has no teeth, which is the same defect this scenario
@@ -926,7 +926,7 @@ try {
 
         transition = styleManager._contextControls._selectContextMode('flights');
         // The activation promise stays PENDING while the first fetch is out, and
-        // the Contacts panel comes up behind it - that is what a deferred
+        // the Contacts panel comes up behind it — that is what a deferred
         // dependency is for. Verified live on :4272: the panel renders and reads
         // a non-numeric count for the whole of a 17 s first fetch.
         const started = await settleWithin((async () => {
@@ -941,7 +941,7 @@ try {
         const pendingReason = installationReason();
 
         // THE WINDOW: first request outstanding, panel live. Sampled more than
-        // once - the field report was a panel sitting on a fabricated 0 for ~13 s,
+        // once — the field report was a panel sitting on a fabricated 0 for ~13 s,
         // so a single lucky read is not evidence.
         const fetchingCounts = [];
         const fetchingReasons = [];
@@ -957,7 +957,7 @@ try {
         // Measured AFTER activation settles, not during it. The sibling pin above
         // ("Contacts blocks early Cockpit entry, then adopts the already tracked
         // flight after settlement") establishes that Contacts HIDES the entry
-        // while the transition is changing - that is the designed contract, and
+        // while the transition is changing — that is the designed contract, and
         // asserting the opposite (as this scenario used to) could never pass.
         // What matters is that a slow dependency does not lock it away for good.
         const cockpitAvailableAfterActivation = !document.getElementById('cockpit-entry')?.hidden;
@@ -1004,7 +1004,7 @@ try {
     await readinessPage.close();
     await page.bringToFront();
   }
-  // The panel has two truthful ways to say "nothing has answered yet" - the
+  // The panel has two truthful ways to say "nothing has answered yet" — the
   // cohort count renders `?`, and an UNKNOWN relationship renders as that word.
   // Which one is on screen depends on which panel surface is mounted, and the
   // property under test is not the token: it is that the operator is NEVER
@@ -1193,7 +1193,7 @@ try {
   // Owner playtest 2026-08-18: "when you click on Contacts, detections should
   // just turn on, and they should stay on in Cockpit or in third-person
   // tracking inside Contacts or inside Cockpit, both… when I leave the Cockpit,
-  // detections go off" - that last part being the bug. Driven through the REAL
+  // detections go off" — that last part being the bug. Driven through the REAL
   // context-mode transaction and the REAL CockpitViewController with a live
   // tracked flight: the one path a Node unit test cannot boot.
   const contactsDetection = await page.evaluate(async () => {
@@ -1228,7 +1228,7 @@ try {
     const cleanupBlockerAbsent = !window.__godsEyeView.dataManager.layers.has(cleanupBlockerId);
     // Adversarial precondition: detection explicitly OFF at a NON-tactical
     // density, and the operator already flagged as having overridden detection
-    // this session - the flag that suppresses the military-style auto-enable.
+    // this session — the flag that suppresses the military-style auto-enable.
     styleManager.setDetection({ enabled: false, densityPct: 25 });
     await settle();
     const beforeContacts = mode();
@@ -1254,7 +1254,7 @@ try {
     const afterCockpitExit = mode();
     const afterCockpitExitDensity = density();
 
-    // 3. A manual off during the session holds - even across a cockpit re-entry.
+    // 3. A manual off during the session holds — even across a cockpit re-entry.
     document.getElementById('detection-toggle')?.click();
     await settle();
     const afterManualOff = mode();
@@ -1325,12 +1325,12 @@ try {
       && contactsDetection.cleanupBlockerAbsent
       && contactsDetection.beforeContacts === 'OFF'
       && contactsDetection.overriddenBeforeContacts === true
-      // Activation forces the military look - Dense @ 75%, not the 25% the
+      // Activation forces the military look — Dense @ 75%, not the 25% the
       // operator was sitting at, and regardless of the override flag.
       && contactsDetection.afterContactsOn === 'DENSE'
       && contactsDetection.afterContactsOnDensity === 75
-      // Cockpit is a move WITHIN Contacts: enter, vision cycle and - the actual
-      // bug - EXIT must all leave detection exactly where it was.
+      // Cockpit is a move WITHIN Contacts: enter, vision cycle and — the actual
+      // bug — EXIT must all leave detection exactly where it was.
       && contactsDetection.insideCockpit === 'DENSE'
       && contactsDetection.afterVisionCycle === 'DENSE'
       && contactsDetection.afterCockpitExit === 'DENSE'
@@ -1338,7 +1338,7 @@ try {
       // A manual off holds for the session, including across a cockpit re-entry.
       && contactsDetection.afterManualOff === 'OFF'
       && contactsDetection.afterCockpitReentry === 'OFF'
-      // Leaving Contacts restores the pre-Contacts state - mode AND density, so
+      // Leaving Contacts restores the pre-Contacts state — mode AND density, so
       // the operator's next manual enable returns their own 25% profile rather
       // than the tactical 75% Contacts stamped on.
       && contactsDetection.afterContactsOff === 'OFF'
@@ -1603,7 +1603,7 @@ try {
     cockpit.setVisionMode('optical');
     current.focus({ preventScroll: true });
     const states = [read()];
-    for (let index = 0; index < 7; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       current.click();
       states.push(read());
     }
@@ -1637,36 +1637,36 @@ try {
       reentered,
     };
   });
-  const cycleModes = ['optical', 'crt', 'nvg', 'thermal', 'anime', 'noir', 'snow', 'optical'];
-  const cycleLabels = ['NORMAL', 'CRT', 'NVG', 'FLIR', 'ANIME', 'NOIR', 'SNOW', 'NORMAL'];
+  const cycleModes = ['optical', 'crt', 'nvg', 'thermal', 'anime', 'noir', 'optical'];
+  const cycleLabels = ['NORMAL', 'CRT', 'NVG', 'FLIR', 'ANIME', 'NOIR', 'NORMAL'];
   check(
-    'Cockpit vision control exposes Normal, CRT, NVG, FLIR, Anime, Noir and Snow before wrapping',
+    'Cockpit vision control exposes Normal, CRT, NVG, FLIR, Anime and Noir before wrapping',
     JSON.stringify(visionCycle.states.map((state) => state.mode)) === JSON.stringify(cycleModes)
       && JSON.stringify(visionCycle.states.map((state) => state.label)) === JSON.stringify(cycleLabels)
       && visionCycle.states[5]?.aria === 'Current cockpit vision style: Noir. Activate for next style.'
-      && visionCycle.states[7]?.aria === 'Current cockpit vision style: Normal. Activate for next style.',
+      && visionCycle.states[6]?.aria === 'Current cockpit vision style: Normal. Activate for next style.',
     JSON.stringify(visionCycle.states.map(({ mode, label, aria }) => ({ mode, label, aria }))),
   );
   check(
     'user vision changes open Display for every temporary treatment and retain selector focus',
-    visionCycle.states.slice(1, 7).every((state) => state.displayOpen === 'true')
-      && visionCycle.states.slice(1, 7).every((state) => state.radioOpen === 'false')
-      && visionCycle.states.slice(1, 7).every((state) => state.parametersActive)
-      && visionCycle.states.slice(1, 7).every((state) => !state.parametersCollapsed)
-      && visionCycle.states.slice(1, 7).every((state) => state.signalCollapsed)
+    visionCycle.states.slice(1, 6).every((state) => state.displayOpen === 'true')
+      && visionCycle.states.slice(1, 6).every((state) => state.radioOpen === 'false')
+      && visionCycle.states.slice(1, 6).every((state) => state.parametersActive)
+      && visionCycle.states.slice(1, 6).every((state) => !state.parametersCollapsed)
+      && visionCycle.states.slice(1, 6).every((state) => state.signalCollapsed)
       && visionCycle.states.every((state) => state.focusRetained),
     JSON.stringify(visionCycle.states),
   );
   check(
     'each Cockpit vision mode drives only its own shader and Normal clears them all',
-    visionCycle.states.slice(1, 7).every((state) => {
+    visionCycle.states.slice(1, 6).every((state) => {
       const target = {
-        crt: 'retro', nvg: 'surveillance', thermal: 'thermal', anime: 'anime', noir: 'noir', snow: 'snow',
+        crt: 'retro', nvg: 'surveillance', thermal: 'thermal', anime: 'anime', noir: 'noir',
       }[state.mode];
       return Object.entries(state.intensities).every(([name, value]) =>
         name === target ? value > 0 : value === 0);
     })
-      && Object.values(visionCycle.states[7].intensities).every((value) => value === 0),
+      && Object.values(visionCycle.states[6].intensities).every((value) => value === 0),
     JSON.stringify(visionCycle.states.map(({ mode, intensities }) => ({ mode, intensities }))),
   );
   check(
@@ -1751,7 +1751,7 @@ try {
     return state;
   }, { variantName: variant, kind: openKind });
 
-  for (const variant of ['off', 'minimal', 'tactical', 'operator']) {
+  for (const variant of ['off', 'minimal', 'tactical']) {
     for (const kind of ['display', 'radio']) {
       const state = await desktopState(variant, kind);
       check(
@@ -1869,8 +1869,8 @@ try {
     const priorSignalMaxHeight = signal.style.maxHeight;
     const priorSignalHeight = signal.style.height;
     // The strip is pinned to the viewport ceiling once the briefing card grows
-    // into its lane, so the corridor is sized by moving that card's top edge -
-    // the wall Cockpit actually solves against - not by injecting an anchor.
+    // into its lane, so the corridor is sized by moving that card's top edge —
+    // the wall Cockpit actually solves against — not by injecting an anchor.
     // The card is bottom-anchored, so an explicit height moves its top edge.
     const minTop = Math.max(96, window.innerHeight * 0.12);
     const moveSignalTopTo = (wantTop) => {
@@ -1905,7 +1905,7 @@ try {
     // Straddle the fit by a pixel instead of aiming AT it. `moveSignalTopTo` only
     // converges to within 0.2 px and the production decision is a strict `>`
     // against exactly that budget, so a corridor sized to the boundary itself
-    // resolves on sub-pixel residue - a coin flip, not a behaviour. It happened to
+    // resolves on sub-pixel residue — a coin flip, not a behaviour. It happened to
     // land heads until Display grew 36 px on 2026-08-22 (the 3D Proximity/All row
     // now ships open), which is what surfaced it. One pixel inside the fit and one
     // pixel outside proves the same transition, deterministically.
@@ -1915,7 +1915,7 @@ try {
     // composition. The anchor is solved against the strip's currently RENDERED
     // height, so arriving here already collapsed to primary-only makes the strip
     // short, pushes the resolved top above minTop, and the "exact" corridor is
-    // then never evaluated at the boundary at all - the check would fail while
+    // then never evaluated at the boundary at all — the check would fail while
     // production is behaving correctly.
     //
     // The fixed `height: 150px` card seed above used to guarantee that; it stopped
@@ -2081,7 +2081,7 @@ try {
       await page.screenshot({ path: path.join(shotsDir, `cyber-resize-${height}.png`) });
     }
   }
-  await page.evaluate(() => window.__godsEyeView.styleManager._setHudVariant('operator'));
+  await page.evaluate(() => window.__godsEyeView.styleManager._setHudVariant('tactical'));
 
   const signalTransition = await page.evaluate(() => {
     const manager = window.__godsEyeView.styleManager;
@@ -2317,13 +2317,13 @@ try {
     const styleManager = window.__godsEyeView.styleManager;
     const styleBefore = styleManager.activeStyle;
     // A Cockpit-only choice that Reset must undo.
-    styleManager.cockpitView.setVisionMode('snow');
+    styleManager.cockpitView.setVisionMode('anime');
     window.__qaCockpitReset = {
       calls: 0,
       original: manager.resetToGlobeView,
       subjectId: awareness?.getContextSnapshot?.()?.subject?.id || null,
       styleBefore,
-      snowDuringCockpit: styleManager.stages?.snow?.uniforms?.intensity,
+      animeDuringCockpit: styleManager.stages?.anime?.uniforms?.intensity,
     };
     manager.resetToGlobeView = function qaCountedCockpitReset(...args) {
       window.__qaCockpitReset.calls += 1;
@@ -2360,7 +2360,7 @@ try {
       height,
       subjectPreserved: Boolean(qa.subjectId && subjectId === qa.subjectId),
       styleRestored: gev.styleManager.activeStyle === qa.styleBefore,
-      snowDuringCockpit: qa.snowDuringCockpit,
+      animeDuringCockpit: qa.animeDuringCockpit,
       // Cockpit-time intensities are Cockpit's own, so check against the map preset.
       visionRestored: Object.entries(gev.styleManager.stages || {}).every(([name, stage]) =>
         name === gev.styleManager.activeStyle
@@ -2376,7 +2376,7 @@ try {
       && resetState.resetHidden
       && Math.abs(resetState.height - 18_000_000) < 150_000
       && resetState.subjectPreserved
-      && resetState.snowDuringCockpit > 0
+      && resetState.animeDuringCockpit > 0
       && resetState.styleRestored
       && resetState.visionRestored,
     JSON.stringify(resetState),

@@ -13,7 +13,7 @@
  * roundabout turn, exit roundabout, exit rotary, notification, use lane.
  */
 
-/** Cap on steps returned for one route - a 2,500 km drive rarely needs more. */
+/** Cap on steps returned for one route — a 2,500 km drive rarely needs more. */
 export const ROUTE_STEPS_MAX = 200;
 
 const DIRECTION_WORDS = Object.freeze({
@@ -52,6 +52,21 @@ function ontoRoad(step) {
 function direction(modifier) {
   const key = cleanText(modifier).toLowerCase();
   return DIRECTION_WORDS[key] || key;
+}
+
+/**
+ * "on the left" only fits a bare side. "slight left" is the adverb
+ * "slightly left", and "on the slightly left" is not an instruction.
+ * @param {string} prefix "Take the ramp" or "Take the exit".
+ * @param {string} modifier OSRM maneuver modifier.
+ * @param {string} onto " onto …", or "".
+ */
+function directedWay(prefix, modifier, onto) {
+  const dir = direction(modifier);
+  if (dir === 'left' || dir === 'right')
+    return `${prefix} on the ${dir}${onto}`;
+  if (dir && dir !== 'straight') return `${prefix} ${dir}${onto}`;
+  return `${prefix}${onto}`;
 }
 
 function ordinal(n) {
@@ -103,13 +118,9 @@ export function instructionFor(step) {
     case 'merge':
       return dir ? `Merge ${dir}${onto}` : `Merge${onto}`;
     case 'on ramp':
-      return dir
-        ? `Take the ramp on the ${dir}${onto}`
-        : `Take the ramp${onto}`;
+      return directedWay('Take the ramp', modifier, onto);
     case 'off ramp':
-      return dir
-        ? `Take the exit on the ${dir}${onto}`
-        : `Take the exit${onto}`;
+      return directedWay('Take the exit', modifier, onto);
     case 'roundabout':
     case 'rotary': {
       const exit = ordinal(step?.exit);
@@ -124,8 +135,14 @@ export function instructionFor(step) {
     case 'exit roundabout':
     case 'exit rotary':
       return `Exit the roundabout${onto}`;
-    case 'use lane':
-      return dir ? `Use the ${dir} lane${onto}` : `Continue${onto}`;
+    case 'use lane': {
+      const lane = modifier.includes('left')
+        ? 'left'
+        : modifier.includes('right')
+          ? 'right'
+          : '';
+      return lane ? `Use the ${lane} lane${onto}` : `Continue${onto}`;
+    }
     case 'notification':
     default:
       return `Continue${onto}`;

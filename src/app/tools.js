@@ -7,6 +7,7 @@ import { createRecentImageryPanel } from '../ui/recentImagery.js';
 import { initGevVoiceCommands } from '../voice/gevRealtime.js';
 import { installViews, isEmbeddedInline } from './embed.js';
 import { installScopeMask, destroyScopeMask } from '../scopeMask.js';
+import { installLayerReleaseTrim } from '../sceneCommandRelease.js';
 import {
   installRenderGovernor,
   getRenderGovernorDiagnostics,
@@ -110,13 +111,22 @@ export function createApplicationTools({
   // nothing animates per frame. Installed AFTER every module above has had
   // its chance to register pre-install holds. (perf wave 2)
   installRenderGovernor(viewer);
+  // Cesium keeps a turned-off layer's draw commands (and so all its entities)
+  // alive in reused per-pass arrays; trim them after each disable.
+  defer(
+    installLayerReleaseTrim({
+      scene: viewer.scene,
+      dataManager,
+      requestRender: governorRequestRender,
+    }),
+  );
 
   // Install the explicit scope mask used by the DISPLAY controls.
   installScopeMask(viewer);
   defer(() => destroyScopeMask());
 
   // The follow camera recomputes the tracked target's dead-reckon position
-  // every frame - tracking anything is a per-frame animation. (perf wave 2)
+  // every frame — tracking anything is a per-frame animation. (perf wave 2)
   const removeTrackingListener = viewer.trackedEntityChanged.addEventListener(
     () => {
       if (viewer.trackedEntity) holdContinuousRender('tracked-entity');
@@ -125,7 +135,7 @@ export function createApplicationTools({
   );
 
   // Hidden-state suspension (perf wave 2): when the window/tab is hidden,
-  // stop the default render loop outright - a hidden canvas repaints for
+  // stop the default render loop outright — a hidden canvas repaints for
   // nobody, and browser rAF throttling still lets throttled frames burn
   // GPU. Holder/data state is untouched, so return is seamless: restore
   // the loop, refresh the one DOM surface we gated, render a frame.
@@ -148,7 +158,7 @@ export function createApplicationTools({
     removeTrackingListener();
     releaseContinuousRender('tracked-entity');
   });
-  // Apply the CURRENT state too - bootstrap can complete while the tab is
+  // Apply the CURRENT state too — bootstrap can complete while the tab is
   // already hidden, and waiting for the next transition would leave the
   // loop burning behind a hidden tab. (perf wave 2 fix)
   syncVisibilitySuspension();

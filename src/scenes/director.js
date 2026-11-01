@@ -143,7 +143,7 @@ export class SceneDirector {
     this._previewRun = false;
     /** @type {{ cancelled: boolean }|null} Cancellation token for the active run */
     this._runToken = null;
-    /** @type {number} Monotonic LOAD counter - only the newest LOAD may land */
+    /** @type {number} Monotonic LOAD counter — only the newest LOAD may land */
     this._loadGeneration = 0;
     /** @type {number} Monotonic camera-travel id for layer-owned motion. */
     this._sceneTravelGeneration = 0;
@@ -153,6 +153,8 @@ export class SceneDirector {
     this._runAbort = null;
     /** @type {AbortController|null} Aborts the in-flight LOAD's layer transitions */
     this._loadAbort = null;
+    /** @type {AbortController|null} Aborts a same-shot seek's layer reconcile */
+    this._seekAbort = null;
     this._clock = createPlaybackClock({
       isRunning: () => this._running,
       timingForShot: (scene, shot) => this._sceneTimingForShot(scene, shot),
@@ -234,7 +236,7 @@ export class SceneDirector {
   destroy() {
     if (this._destroyPromise) return this._destroyPromise;
     this._destroyed = true;
-    this._sceneSeekGeneration++;
+    this._bumpSceneSeekGeneration();
     this._visibilityUnsubscribe?.();
     this._cameraHandoffUnsubscribe?.();
     this._removeCameraInput?.();
@@ -323,7 +325,7 @@ export class SceneDirector {
     if (this._storageReadError) {
       this._toastStorageError(
         t(
-          'Scene not saved - existing saved project could not be read. Export edits or import a valid file.',
+          'Scene not saved — existing saved project could not be read. Export edits or import a valid file.',
         ),
       );
       return false;
@@ -336,7 +338,7 @@ export class SceneDirector {
       return true;
     } catch (e) {
       // Private browsing / block-all-cookies / quota-exceeded throws here. The
-      // in-memory project stays usable this session, but persistence failed -
+      // in-memory project stays usable this session, but persistence failed —
       // tell the user instead of crashing the caller (M11).
       // A validation failure is logged with its technical path and check;
       // the toast says it in words (sceneSaveError.js).
@@ -349,7 +351,7 @@ export class SceneDirector {
       );
       this._toastStorageError(
         invalid
-          ? t('Scene not saved - {reason}', {
+          ? t('Scene not saved — {reason}', {
               reason: sceneSaveFailureReason(e),
             })
           : undefined,
@@ -360,7 +362,7 @@ export class SceneDirector {
 
   /** Surface a "scene not saved" notice via the global toast + scene status line. */
   _toastStorageError(
-    message = t('Scene not saved - browser storage unavailable'),
+    message = t('Scene not saved — browser storage unavailable'),
   ) {
     this._updateStatus(message);
     try {
@@ -1058,7 +1060,7 @@ export class SceneDirector {
    * The newest LOAD wins. Two shot rows clicked in quick succession (or a
    * voice load landing on top of a click) both suspend on the visual and layer
    * awaits below; without a generation the OLDER request can complete second
-   * and overwrite the operator's newer intent - the camera ends on shot A
+   * and overwrite the operator's newer intent — the camera ends on shot A
    * while the panel reads shot B.
    *
    * @param {string} sceneId
@@ -1071,7 +1073,7 @@ export class SceneDirector {
   loadShot(sceneId, shotId, options) {
     if (this._destroyed)
       return Promise.resolve({ started: false, reason: 'destroyed' });
-    this._sceneSeekGeneration++;
+    this._bumpSceneSeekGeneration();
     this._interactionTransitions = 0;
     const previousGeneration = this._loadGeneration;
     const work = this._loadShot(sceneId, shotId, options);
@@ -1516,9 +1518,30 @@ export class SceneDirector {
     return new Promise((resolve) => this._runIdleResolvers.add(resolve));
   }
 
-  /** Apply a new time inside the already-loaded shot without rebuilding its stack. */
-  _seekLoadedShot(scene, seekState) {
-    if (this._destroyed) return false;
+  /**
+   * Supersede any pending seek. Only a seek's own layer reconcile is aborted:
+   * a request that is later rejected must not cancel an in-flight LOAD.
+   */
+  _bumpSceneSeekGeneration() {
+    if (this._seekAbort) {
+      this._seekAbort.abort();
+      if (this._loadAbort === this._seekAbort) this._loadAbort = null;
+      this._seekAbort = null;
+    }
+    return ++this._sceneSeekGeneration;
+  }
+
+  /**
+   * Apply a new time inside the already-loaded shot without rebuilding its stack.
+   * @returns {Promise<boolean|null>} Null when the shortcut does not apply and
+   *   LOAD must rebuild the shot; otherwise whether the seek settled.
+   */
+  async _seekLoadedShot(
+    scene,
+    seekState,
+    seekGeneration = this._sceneSeekGeneration,
+  ) {
+    if (this._destroyed) return null;
     const shot = seekState?.shot;
     if (
       !scene ||
@@ -1528,17 +1551,77 @@ export class SceneDirector {
       this._loadedSceneId !== scene.id ||
       this._selectedShotId !== shot.id
     )
+      return null;
+    if (this._destroyed || seekGeneration !== this._sceneSeekGeneration)
       return false;
     if (!this._claimCameraOwnership()) return false;
     this._cancelActiveSceneTravel();
     this._loadAbort?.abort();
     this._loadAbort = null;
-    this._loadGeneration += 1;
+    const generation = ++this._loadGeneration;
     this._clock.stopShot();
     const states = this._layerStatesForShot(scene, shot, {
       cameraSettled: seekState.cameraProgress >= 1,
       sceneSeek: seekState,
     });
+    // A manual toggle, or a superseded LOAD transition whose rollback is still
+    // settling, leaves declared layers off the shot's stack. Reconcile only
+    // those through the cancellable admission path.
+    const staleStates = Object.fromEntries(
+      Object.entries(states)
+        .filter(([id, state]) => {
+          const wantEnabled = !!state?.enabled;
+          const lifecycle = this.dataManager.getLayerLifecycleState(id);
+          return (
+            lifecycle &&
+            (lifecycle.enabled !== wantEnabled ||
+              lifecycle.lifecycleState === 'enabling' ||
+              lifecycle.lifecycleState === 'disabling' ||
+              lifecycle.uncertain ||
+              this.dataManager.isEffectivelyEnabled(id) !== wantEnabled)
+          );
+        })
+        .map(([id, state]) => [id, { enabled: !!state?.enabled }]),
+    );
+    if (Object.keys(staleStates).length) {
+      const previousEnabled = new Map(
+        Object.keys(staleStates).map((id) => [
+          id,
+          this.dataManager.isEffectivelyEnabled(id),
+        ]),
+      );
+      const controller = new AbortController();
+      this._loadAbort = controller;
+      this._seekAbort = controller;
+      const layerResult = await this._applyLayerStates(
+        staleStates,
+        this._loadToken(generation, controller.signal, seekGeneration),
+        { stopOnRefusal: true, exitContextMode: false },
+      );
+      if (this._loadAbort === controller) this._loadAbort = null;
+      if (this._seekAbort === controller) this._seekAbort = null;
+      const superseded = () =>
+        this._destroyed ||
+        this._loadAbort ||
+        this._running ||
+        seekGeneration !== this._sceneSeekGeneration;
+      if (layerResult.cancelled || superseded()) return false;
+      if (layerResult.refused.length) {
+        // Only a refusal rolls back. A cancelled reconcile leaves layer state
+        // to whatever superseded it, as a cancelled LOAD does.
+        for (const id of [...layerResult.applied].reverse()) {
+          if (superseded()) break;
+          await this.dataManager.setEnabled(
+            id,
+            previousEnabled.get(id) ?? false,
+            { origin: 'scene' },
+          );
+        }
+        return false;
+      }
+    }
+    if (this._destroyed || seekGeneration !== this._sceneSeekGeneration)
+      return false;
     let applied = true;
     for (const [layerId, state] of Object.entries(states)) {
       if (!state?.enabled || !state.params) continue;
@@ -1550,7 +1633,9 @@ export class SceneDirector {
         applied = false;
       }
     }
-    if (!applied) return false;
+    if (!applied) return null;
+    if (this._destroyed || seekGeneration !== this._sceneSeekGeneration)
+      return false;
     this._setCameraView(
       seekState.camera || resolveCameraPose(scene, shot.camera),
     );
@@ -1572,7 +1657,7 @@ export class SceneDirector {
   seekScene(sceneId, progress) {
     if (this._destroyed) return Promise.resolve(false);
     this.stopScene(msg('Seeking scene clock'));
-    const generation = ++this._sceneSeekGeneration;
+    const generation = this._bumpSceneSeekGeneration();
     return this._trackWork(this._seekScene(sceneId, progress, generation));
   }
 
@@ -1586,7 +1671,10 @@ export class SceneDirector {
       return false;
     const seekState = this._sceneSeekState(scene, progress);
     if (!seekState) return false;
-    if (this._seekLoadedShot(scene, seekState)) return true;
+    const seeked = await this._seekLoadedShot(scene, seekState, generation);
+    if (this._destroyed || generation !== this._sceneSeekGeneration)
+      return false;
+    if (seeked !== null) return seeked;
     const result = await this._loadShot(scene.id, seekState.shot.id, {
       sceneSeek: seekState,
     });
@@ -1606,15 +1694,17 @@ export class SceneDirector {
    * @param {AbortSignal} [signal] - Abort signal for this LOAD's manager calls
    * @returns {{ cancelled: boolean, signal: AbortSignal|undefined }}
    */
-  _loadToken(generation, signal = undefined) {
+  _loadToken(generation, signal = undefined, seekGeneration = null) {
     const director = this;
     return {
       signal,
       get cancelled() {
         return (
           director._destroyed ||
-          signal?.aborted ||
-          director._loadGeneration !== generation
+          Boolean(signal?.aborted) ||
+          director._loadGeneration !== generation ||
+          (seekGeneration !== null &&
+            director._sceneSeekGeneration !== seekGeneration)
         );
       },
     };
@@ -1630,7 +1720,7 @@ export class SceneDirector {
    */
   _claimCameraOwnership() {
     cancelCameraArrival(this.viewer);
-    // Older/headless style managers may predate the facade - proceed then.
+    // Older/headless style managers may predate the facade — proceed then.
     if (typeof this.styleManager?.runImmediateNavigation !== 'function')
       return true;
     let claimed;
@@ -1641,7 +1731,7 @@ export class SceneDirector {
       this._claimingCamera = false;
     }
     if (claimed === false) {
-      this._updateStatus(t('Camera unavailable - exit cockpit first'));
+      this._updateStatus(t('Camera unavailable — exit cockpit first'));
       return false;
     }
     return true;
@@ -1753,7 +1843,7 @@ export class SceneDirector {
   startScene(sceneId, options) {
     if (this._destroyed)
       return Promise.resolve({ started: false, reason: 'destroyed' });
-    this._sceneSeekGeneration++;
+    this._bumpSceneSeekGeneration();
     return this._trackWork(this._startScene(sceneId, options));
   }
 
@@ -1813,7 +1903,7 @@ export class SceneDirector {
     // Create a cancellation token shared across async steps. Held in a local
     // as well: _finishRun() clears this._runToken, so the loop must not read
     // cancellation off the instance after cleanup has started. Its signal is
-    // what actually stops in-flight manager work when STOP arrives - the
+    // what actually stops in-flight manager work when STOP arrives — the
     // boolean alone only stops the NEXT step.
     this._runAbort = new AbortController();
     this._runToken = { cancelled: false, signal: this._runAbort.signal };
@@ -1907,7 +1997,7 @@ export class SceneDirector {
    *
    * The abort is the part that stops work already under way: a layer
    * transition awaited by _applyLayerStates cannot see a boolean, and without
-   * the signal it commits after the operator has stopped - leaving the layer
+   * the signal it commits after the operator has stopped — leaving the layer
    * enabled while the post-await check skips its params. The manager rolls an
    * aborted enable back through the module's own disable().
    *
@@ -1919,7 +2009,7 @@ export class SceneDirector {
     this._setSceneMediaPlayback();
     this._interactions?.clear();
     this._dataPacks?.clear();
-    this._sceneSeekGeneration++;
+    this._bumpSceneSeekGeneration();
     this._loadAbort?.abort();
     this._loadAbort = null;
     this._loadGeneration++;
@@ -1987,7 +2077,7 @@ export class SceneDirector {
     if (action.type === 'shot') {
       if (this._interactionTransitions >= 64) {
         this._updateStatus(
-          t('Scene transition limit reached - load a shot to reset'),
+          t('Scene transition limit reached — load a shot to reset'),
         );
         return false;
       }
@@ -2138,7 +2228,7 @@ export class SceneDirector {
 
   /**
    * Reconcile data layer states to match the shot's target configuration.
-   * Only layers the shot declares are touched - see src/scenes/scenePolicy.js
+   * Only layers the shot declares are touched — see src/scenes/scenePolicy.js
    * for why undeclared layers are left alone.
    *
    * Two things this pass owes the operator:
@@ -2153,7 +2243,7 @@ export class SceneDirector {
    * request cancels the layer that is CURRENTLY moving rather than only the
    * ones not started yet. Checking the boolean after the await is a backstop:
    * by then an un-aborted transition has already committed, and the pass would
-   * return without its params - the layer left on with stale ones.
+   * return without its params — the layer left on with stale ones.
    *
    * Cancellation is read BEFORE the refusal branch on purpose: an aborted
    * transition also answers false, and reporting the operator's own stop as a
@@ -2161,11 +2251,15 @@ export class SceneDirector {
    *
    * @param {Object.<string, { enabled: boolean, params?: Object }>} targetStates
    * @param {{ cancelled: boolean, signal?: AbortSignal }|null} [token]
-   *   Cancellation token - a stop or a newer request ends the pass and aborts
+   *   Cancellation token — a stop or a newer request ends the pass and aborts
    *   the transition in flight.
    * @returns {Promise<{ applied: string[], refused: string[], cancelled: boolean }>}
    */
-  async _applyLayerStates(targetStates, token = null) {
+  async _applyLayerStates(
+    targetStates,
+    token = null,
+    { stopOnRefusal = false, exitContextMode = true } = {},
+  ) {
     const applied = [];
     const refused = [];
     const abort = () => ({ applied, refused, cancelled: true });
@@ -2175,8 +2269,10 @@ export class SceneDirector {
     // the operator's pre-mode state, which is exactly where a stopped scene
     // should come to rest. Tearing that transaction in half would strand
     // Context, so it completes and cancellation is honoured immediately after.
-    await this._exitIsolatingContextMode();
-    if (token?.cancelled) return abort();
+    if (exitContextMode) {
+      await this._exitIsolatingContextMode();
+      if (token?.cancelled) return abort();
+    }
 
     const signal = token?.signal;
     const registered = new Set(
@@ -2206,6 +2302,7 @@ export class SceneDirector {
         console.warn(
           `[Scenes] Layer refused: ${id} → ${enabled ? 'on' : 'off'}`,
         );
+        if (stopOnRefusal) break;
         continue;
       }
       if (params && typeof this.dataManager.restoreLayerState !== 'function') {
@@ -2278,7 +2375,7 @@ export class SceneDirector {
    *
    * Space Missions is the shipped case. It is a destructive-exclusive mode: a
    * guard refuses every enable outside its own replay bundle, so a recipe that
-   * declares flights/satellites/earthquakes/traffic gets all four refused -
+   * declares flights/satellites/earthquakes/traffic gets all four refused —
    * and Orbital Watch, whose satellites the guard does permit, would still
    * play over the mode's rocket-launches replay it never declared. Either way
    * the shot is not the composition it describes.
@@ -2308,7 +2405,7 @@ export class SceneDirector {
         result.error || 'unknown reason',
       );
       this._updateStatus(
-        t('Could not exit {mode} - scene layers may be refused', { mode }),
+        t('Could not exit {mode} — scene layers may be refused', { mode }),
       );
       this._logEvent('context_mode_exit_failed', {
         mode,

@@ -1,3 +1,4 @@
+import * as Cesium from 'cesium';
 import {
   SUPPORT_KEYS,
   planeSupportPoints,
@@ -14,17 +15,17 @@ export function createGround({ state: layerState, services, parts, source }) {
   /**
    * Task 5 (height-datum fix): maps the scene's `globe.show` flag to the surface
    * regime key the per-camera ground cache is keyed by (spec §2 "cache by
-   * surface regime", collapsed to two keys - ion World Terrain and Re:Earth
+   * surface regime", collapsed to two keys — ion World Terrain and Re:Earth
    * globe terrain get the same handling):
    *
-   *  - `google-3d`     - photoreal stack: globe hidden, the visible Google 3D
+   *  - `google-3d`     — photoreal stack: globe hidden, the visible Google 3D
    *                      tileset IS the surface → one-shot scene sampling refines.
-   *  - `terrain-globe` - any globe stack: the Re:Earth point-height prior IS the
+   *  - `terrain-globe` — any globe stack: the Re:Earth point-height prior IS the
    *                      resolution (zero scene queries).
    *
    * Only an explicit `false` (the photoreal stack hides the globe) selects
    * `google-3d`; undefined/null (no viewer / torn down) must fall to the regime
-   * that never touches the scene. Pure - exported for the unit suite.
+   * that never touches the scene. Pure — exported for the unit suite.
    * @param {boolean|undefined|null} globeShow - `viewer.scene.globe.show`.
    * @returns {'google-3d'|'terrain-globe'}
    */
@@ -37,7 +38,7 @@ export function createGround({ state: layerState, services, parts, source }) {
    * Task 5: the surface regime the scene is CURRENTLY rendering, derived live
    * from `globe.show` (mapStackController's `_activatePhotoreal` /
    * `_activateGlobeStack` flip exactly this flag). Reading scene state directly
-   * - rather than caching the map-stack id - means the regime is correct even
+   * — rather than caching the map-stack id — means the regime is correct even
    * for stack changes this module never got an event for.
    * @returns {'google-3d'|'terrain-globe'}
    */
@@ -51,7 +52,7 @@ export function createGround({ state: layerState, services, parts, source }) {
    * `record.groundPrior.ellipsoid`), falling back to the catalog's fabricated
    * orthometric `groundElevationM` only when the prior batch hasn't landed yet.
    * This is the value that replaces every previous
-   * `Number(camera.groundElevationM) || 0` ground fallback - it alone lifts
+   * `Number(camera.groundElevationM) || 0` ground fallback — it alone lifts
    * London's cameras from the fabricated 15 m to ~52.7 m ellipsoidal in every
    * regime, on first paint.
    * @param {Object} record - Camera record.
@@ -67,7 +68,7 @@ export function createGround({ state: layerState, services, parts, source }) {
 
   /**
    * Task 5: whether the record's one-shot ground resolution has completed for
-   * the given regime (per-regime latch - replaces the old boolean
+   * the given regime (per-regime latch — replaces the old boolean
    * `groundResolved`).
    * @param {Object} record - Camera record.
    * @param {string} [regime] - Defaults to the current surface regime.
@@ -79,8 +80,16 @@ export function createGround({ state: layerState, services, parts, source }) {
   }
 
   /**
+   * True until the record has geometry grounded for the regime. Cameras are
+   * refined only once they enter the view, so many never have geometry.
+   */
+  function needsGeometry(record, regime = currentSurfaceRegime()) {
+    return !record?.frustumGeometry || !isGroundResolved(record, regime);
+  }
+
+  /**
    * Ground altitude used for pure geometry recomputes: the given regime's
-   * cached resolution (`record.groundSamples[regime]` - a shared mesh/DEM floor
+   * cached resolution (`record.groundSamples[regime]` — a shared mesh/DEM floor
    * in google-3d, the DEM/prior in terrain-globe) when it exists, else the prior
    * itself. Never queries the scene.
    * @param {Object} record - Camera record.
@@ -150,11 +159,11 @@ export function createGround({ state: layerState, services, parts, source }) {
 
   /**
    * Task 5: batches every catalog camera's coords through the Re:Earth
-   * ellipsoidal ground resolver (`/api/terrain/heights` proxy - network-cached,
+   * ellipsoidal ground resolver (`/api/terrain/heights` proxy — network-cached,
    * chunked, geoid fallback; NOT a scene query). The catalog's orthometric
    * `groundElevationM` rides along as `sourceOrthometricM` so the geoid
    * fallback chain is meaningful where the catalog value is real (Caltrans).
-   * Never rejects - a total failure resolves null and geometry stays on
+   * Never rejects — a total failure resolves null and geometry stays on
    * catalog fallbacks (no worse than pre-Task-5).
    * @param {Object[]} catalog - Camera objects (post-ensureCameraPose).
    * @returns {Promise<Array<{ellipsoid:number, source:string}>|null>}
@@ -182,10 +191,13 @@ export function createGround({ state: layerState, services, parts, source }) {
 
   /**
    * Task 5: applies a LATE-arriving ground-prior batch (init's bounded race
-   * lost - cold proxy cache / slow upstream). Pure recomputes only, no scene
+   * lost — cold proxy cache / slow upstream). Pure recomputes only, no scene
    * queries:
+   *  - records without geometry yet: only the icon moves onto the prior;
+   *    the frustum is built when the camera enters the view.
    *  - terrain-globe regime: the prior IS the resolution → re-run the
-   *    resolution (updateRecordGeometry latches it) for every record.
+   *    resolution (updateRecordGeometry latches it) for every record with
+   *    geometry.
    *  - google-3d regime: records still awaiting a shared floor move from the
    *    catalog fallback onto the exact prior; records already holding a shared
    *    mesh/DEM floor keep it untouched.
@@ -198,12 +210,13 @@ export function createGround({ state: layerState, services, parts, source }) {
   function applyLateGroundPriors(records, priors) {
     if (!Array.isArray(records) || !Array.isArray(priors)) return;
     let applied = 0;
+    let moved = 0;
     for (let i = 0; i < records.length && i < priors.length; i++) {
       const record = records[i];
       const prior = priors[i];
       if (!record || !prior || !Number.isFinite(prior.ellipsoid)) continue;
       // Stale-record guard: init() may have re-run (destroy/init cycle) while
-      // the batch was in flight - only touch records still live in the map.
+      // the batch was in flight — only touch records still live in the map.
       if (layerState._recordById.get(record.camera.id) !== record) continue;
       record.groundPrior = prior;
       // Keep the cheap pre-enable altitude consistent for records whose
@@ -212,9 +225,27 @@ export function createGround({ state: layerState, services, parts, source }) {
         record.camera.absoluteHeightM =
           prior.ellipsoid + record.camera.mountHeightM;
       }
+      // Cameras without geometry only move their icon onto the prior, so the
+      // view pass projects the right point; their frustums are built when
+      // they enter the view, as recomputing the whole catalog here would
+      // stall a large one.
+      if (!record.frustumGeometry) {
+        if (record.position) {
+          Cesium.Cartesian3.fromDegrees(
+            record.camera.lon,
+            record.camera.lat,
+            record.camera.absoluteHeightM,
+            undefined,
+            record.position,
+          );
+          if (record.billboard) record.billboard.position = record.position;
+          moved += 1;
+        }
+        continue;
+      }
       const regime = currentSurfaceRegime();
       if (regime === 'terrain-globe') {
-        // Prior IS the resolution - re-latch onto the fresh value.
+        // Prior IS the resolution — re-latch onto the fresh value.
         parts.geometry.updateRecordGeometry(record, { sampleGround: false });
         applied += 1;
       } else if (!Number.isFinite(record.groundSamples['google-3d'])) {
@@ -224,7 +255,9 @@ export function createGround({ state: layerState, services, parts, source }) {
         applied += 1;
       }
     }
-    if (applied) parts.presentation.notifyListeners();
+    if (moved && parts.rendering.refreshHorizonCulling())
+      parts.geometryQueue.enqueueViewGeometry();
+    if (applied || moved) parts.presentation.notifyListeners();
   }
 
   /**
@@ -234,13 +267,13 @@ export function createGround({ state: layerState, services, parts, source }) {
    * deck/building-top in google-3d vs bare Re:Earth DEM on globe stacks), so
    * on a REGIME change (photoreal ↔ globe; bing→osm stays 'terrain-globe' and
    * no-ops):
-   *  1. every record's geometry recomputes IMMEDIATELY from the new regime's
-   *     resolution - cached sample if that regime has one, else the Re:Earth
+   *  1. every record that has geometry recomputes IMMEDIATELY from the new regime's
+   *     resolution — cached sample if that regime has one, else the Re:Earth
    *     prior (never blank, zero scene queries);
    *  2. entering google-3d re-arms the one-shot tiles-ready completion latch so
    *     update()'s existing event-driven machinery refines records that never
    *     took their sample, through the same staggered queue.
-   * Event-driven only - never called on a timer.
+   * Event-driven only — never called on a timer.
    */
 
   function handleMapStackChanged() {
@@ -250,14 +283,17 @@ export function createGround({ state: layerState, services, parts, source }) {
     layerState._lastAppliedRegime = regime;
 
     for (const record of layerState._records) {
+      // Only cameras that already have geometry are rewritten; the rest are
+      // grounded for the new regime when they enter the view.
+      if (!record.frustumGeometry) continue;
       if (regime === 'terrain-globe') {
-        // Prior IS the resolution - latch it (zero scene queries).
+        // Prior IS the resolution — latch it (zero scene queries).
         record.groundSamples['terrain-globe'] = groundPriorAltFor(record);
         record.groundResolved['terrain-globe'] = true;
       }
       const ground = groundAltFor(record, regime);
       // Skip the entity rewrite when the applied ground already matches (e.g.
-      // entering google-3d before any sample: prior → prior is a no-op) -
+      // entering google-3d before any sample: prior → prior is a no-op) —
       // unless the record has a footprint source, whose eligibility depends
       // on the regime (shipped mesh samples apply in google-3d only).
       const hasFootprintSource =
@@ -276,12 +312,12 @@ export function createGround({ state: layerState, services, parts, source }) {
       // Fresh google-3d session: let update()'s ONE-SHOT completion pass
       // re-enqueue records without an accepted sample once the (re-shown)
       // tileset reports tilesLoaded. Records already sampled in a previous
-      // google-3d session keep their cached resolution - 0 new samples, well
+      // google-3d session keep their cached resolution — 0 new samples, well
       // under the ≤1-per-(camera, session) ceiling.
       layerState._tilesReadyReenqueued = false;
     }
     // The active camera may have just lost its shipped footprint (globe
-    // regime) - resolve its DEM footprint for the new surface.
+    // regime) — resolve its DEM footprint for the new surface.
     const active = layerState._recordById.get(layerState._activeCameraId);
     if (active) void resolveFootprintGround(active);
     parts.presentation.notifyListeners();
@@ -353,6 +389,7 @@ export function createGround({ state: layerState, services, parts, source }) {
     resolveFootprintGround,
     groundPriorAltFor,
     isGroundResolved,
+    needsGeometry,
     groundAltFor,
     rearmGroundResolution,
     resolveCommittedGroundAnchor,

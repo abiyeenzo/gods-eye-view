@@ -1,6 +1,5 @@
 import { msg, t } from '../../i18n/index.js';
 import { STATUS_POLL_MS } from './policy.js';
-import { ICONS } from '../../icons.js';
 
 export function createControls({ state: layerState, services, parts, source }) {
   const methods = {
@@ -8,9 +7,7 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     name: 'Bikeshare',
 
-    icon: '',
-
-    iconSvg: ICONS.bike,
+    icon: '🚲',
 
     source: 'GBFS',
 

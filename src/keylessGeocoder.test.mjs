@@ -1,15 +1,15 @@
-// KEYLESS GEOCODER - the Photon adapter that keeps place search working
+// KEYLESS GEOCODER — the Photon adapter that keeps place search working
 // without a Google key.
 //
 // The whole value of this module is that its output is INDISTINGUISHABLE to
 // everything downstream: `geocodeNavigationMode` and the framing code must keep
 // making the same decisions they make on a Google result. So these tests check
-// the translation, not the network - three things that go wrong silently:
+// the translation, not the network — three things that go wrong silently:
 //
 //   1. Photon's `extent` is [west, north, east, south]. Read as [w,s,e,n] it
 //      yields an inverted-but-plausible box, and the camera frames nonsense.
 //   2. Photon calls a national park `type: 'other'`. Dropped, a park geocodes
-//      as a precise place and the camera lands on a random patch of grass -
+//      as a precise place and the camera lands on a random patch of grass —
 //      the exact bug geocodeNavigationMode's area types exist to prevent.
 //   3. A miss must be `null`, never a throw: both callers read null as
 //      "not found" and a throw would surface as a broken search box.
@@ -30,6 +30,7 @@ import {
   photonResultTypes,
   photonSearchUrl,
   selectPhotonFeature,
+  selectQualifiedFeature,
 } from './keylessGeocoder.js';
 import { geocodeNavigationMode } from './locations.js';
 
@@ -63,7 +64,7 @@ test('the extent is read as [west, north, east, south], not as [w,s,e,n]', () =>
   const bounds = photonExtentToBounds(HANOI.properties.extent);
 
   // Hanoi spans roughly 20.56..21.39 N and 105.29..106.02 E. A [w,s,e,n] read
-  // would put north at 21.385 and south at 106.02 - a box that still has four
+  // would put north at 21.385 and south at 106.02 — a box that still has four
   // finite numbers and would frame the camera at nothing.
   assert.equal(bounds.southwest.lat, 20.5645154);
   assert.equal(bounds.northeast.lat, 21.3854176);
@@ -108,7 +109,7 @@ test('area features keep an area type so the camera frames them, not a rooftop',
   }
 });
 
-test('a tag rule wins over the coarse class - a town square is not a city', () => {
+test('a tag rule wins over the coarse class — a town square is not a city', () => {
   // Photon reports Times Square and Quang truong Ba Dinh as place=square with
   // type: 'locality'. Falling through to the coarse class framed a plaza as if
   // it were a whole city.
@@ -146,7 +147,7 @@ test('the Google bias becomes a SOFT proximity bias, never a hard bbox', () => {
 
   // Measured against the live service: Photon's bbox FILTERS, Google's bounds
   // PREFERS. Sending the rectangle as a bbox makes every off-screen search
-  // return features: [] - "Ho Guom, Ha Noi" while looking at Austin finds
+  // return features: [] — "Ho Guom, Ha Noi" while looking at Austin finds
   // nothing at all. This assertion is the guard against that regression.
   assert.equal(url.searchParams.get('bbox'), null, 'a bbox would filter out every off-screen place');
 });
@@ -160,7 +161,7 @@ test('an absent or unparsable bias drops the bias instead of sending a broken on
   }
 });
 
-test('a network failure resolves to null - callers read null as not-found', async () => {
+test('a network failure resolves to null — callers read null as not-found', async () => {
   const rejecting = () => Promise.reject(new Error('offline'));
   assert.equal(await geocodeKeyless('Hanoi', { fetchImpl: rejecting }), null);
 
@@ -238,7 +239,7 @@ function photonPair(nearby, anywhere) {
 test('a biased near-miss is refused, and the unbiased answer is taken instead', async () => {
   // Measured from Austin against the live service: "Huế" scored Hutto, Texas
   // above the city, and "Hạ Long" scored Long Branch. Distance alone must not
-  // outrank the name - three of twelve Vietnamese names crossed a continent.
+  // outrank the name — three of twelve Vietnamese names crossed a continent.
   const fetchImpl = photonPair([HUTTO], [HUE]);
 
   const result = await geocodeKeyless('Huế', { bias: '30.20,-97.80|30.30,-97.70', fetchImpl });
@@ -288,6 +289,245 @@ test('a "place, region" query is matched on the place, not the region', async ()
   assert.equal(result.label.startsWith('Hoàn Kiếm Lake'), true, `got ${result.label}`);
 });
 
+/** Photon's real answers for "Paris, Texas" biased to Denver, then unbiased. */
+const PARIS_TX = {
+  geometry: { type: 'Point', coordinates: [-95.5555, 33.6609] },
+  properties: { osm_key: 'place', osm_value: 'town', type: 'city', name: 'Paris', state: 'Texas', country: 'United States', countrycode: 'US' },
+};
+const PARIS_TEXAS_PUB = {
+  geometry: { type: 'Point', coordinates: [19.0606, 47.4868] },
+  properties: { osm_key: 'amenity', osm_value: 'pub', type: 'house', name: 'Paris, Texas', city: 'Budapest', country: 'Magyarország', countrycode: 'HU' },
+};
+const PARIS_TEXAS_SALON = {
+  geometry: { type: 'Point', coordinates: [153.03, -27.47] },
+  properties: { osm_key: 'shop', osm_value: 'hairdresser', type: 'house', name: 'Paris Texas', city: 'Brisbane', state: 'Queensland', country: 'Australia', countrycode: 'AU' },
+};
+
+test('"Paris, Texas" is the town in Texas, not a pub of that name in Budapest', async () => {
+  // Measured from Denver against the live service: the biased answer listed the
+  // town first, but the pub's name equals the whole query and won, flying the
+  // camera to Budapest at rooftop range.
+  const fetchImpl = photonPair([PARIS_TX, PARIS_TEXAS_PUB, PARIS_TEXAS_SALON], [PARIS_TX]);
+
+  const result = await geocodeKeyless('Paris, Texas', { bias: '39.70,-104.90|39.80,-104.80', fetchImpl });
+
+  assert.equal(Math.round(result.lat), 34, `got ${result.label}`);
+  assert.equal(fetchImpl.urls.length, 1);
+});
+
+test('a region is checked against where a candidate is, not its name', () => {
+  const pubFirst = [PARIS_TEXAS_PUB, PARIS_TEXAS_SALON, PARIS_TX];
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris, Texas'), PARIS_TX);
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris, United States'), PARIS_TX);
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris, US'), PARIS_TX);
+  // No region, or a region nothing lies in, leaves the choice to the name rules.
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris'), null);
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris, Ontario'), null);
+  assert.equal(selectQualifiedFeature(undefined, 'Paris, Texas'), null);
+});
+
+test('a region nearby fits nothing, so the unbiased answer decides', async () => {
+  const fetchImpl = photonPair([PARIS_TEXAS_PUB], [PARIS_TX, PARIS_TEXAS_PUB]);
+
+  const result = await geocodeKeyless('Paris, Texas', { bias: '47.40,19.00|47.50,19.10', fetchImpl });
+
+  assert.equal(Math.round(result.lat), 34, `got ${result.label}`);
+  assert.equal(fetchImpl.urls.length, 2);
+});
+
+test('"USA" and "UK" name their countries, and a trailing comma keeps the nearby answer', async () => {
+  const pubFirst = [PARIS_TEXAS_PUB, PARIS_TX];
+  assert.equal(selectQualifiedFeature(pubFirst, 'Paris, Texas, USA'), PARIS_TX);
+  // "Paris," names no region: the camera-biased pass still answers.
+  const fetchImpl = photonPair([PARIS_TX], []);
+  const result = await geocodeKeyless('Paris,', {
+    bias: '33.60,-95.60|33.70,-95.50',
+    fetchImpl,
+  });
+  assert.equal(Math.round(result.lat), 34, `got ${result.label}`);
+  assert.equal(fetchImpl.urls.length, 1);
+});
+
+test('a region match takes the place itself, not a place whose name starts with it', () => {
+  const station = {
+    geometry: { type: 'Point', coordinates: [4.86, 45.76] },
+    properties: {
+      osm_key: 'railway',
+      name: 'Paris Gare de Lyon',
+      city: 'Paris',
+      country: 'France',
+      countrycode: 'FR',
+    },
+  };
+  const paris = {
+    geometry: { type: 'Point', coordinates: [2.35, 48.86] },
+    properties: {
+      osm_key: 'place',
+      name: 'Paris',
+      state: 'Île-de-France',
+      country: 'France',
+      countrycode: 'FR',
+    },
+  };
+  assert.equal(selectQualifiedFeature([station, paris], 'Paris, France'), paris);
+  assert.equal(selectQualifiedFeature([station], 'Paris, France'), null);
+});
+
+test('"UK" names the United Kingdom', () => {
+  const london = {
+    geometry: { type: 'Point', coordinates: [-0.13, 51.51] },
+    properties: {
+      osm_key: 'place',
+      name: 'London',
+      country: 'United Kingdom',
+      countrycode: 'GB',
+    },
+  };
+  const ontario = {
+    geometry: { type: 'Point', coordinates: [-81.25, 42.98] },
+    properties: {
+      osm_key: 'place',
+      name: 'London',
+      state: 'Ontario',
+      country: 'Canada',
+      countrycode: 'CA',
+    },
+  };
+  assert.equal(selectQualifiedFeature([ontario, london], 'London, UK'), london);
+});
+
+test('a nearby place whose own name has a comma still wins when nothing matches as place and region', async () => {
+  const store = (lon, lat, city) => ({
+    geometry: { type: 'Point', coordinates: [lon, lat] },
+    properties: {
+      osm_key: 'shop',
+      osm_value: 'houseware',
+      name: 'Bed, Bath & Beyond',
+      city,
+      countrycode: 'US',
+    },
+  });
+  const nearby = store(-104.94, 39.66, 'Denver');
+  const fetchImpl = photonPair([nearby], [store(-73.99, 40.74, 'New York')]);
+
+  const result = await geocodeKeyless('Bed, Bath & Beyond', {
+    bias: '39.60,-105.00|39.70,-104.90',
+    fetchImpl,
+  });
+
+  assert.match(result.label, /Denver/);
+  // Main answered this from the nearby pass alone. The second request is the
+  // accepted cost of checking the region unbiased first.
+  assert.equal(fetchImpl.urls.length, 2, 'the region checks ran first');
+});
+
+test('the nearby whole-name fallback takes an exact name, not one that only starts with the query', async () => {
+  const place = (name, lon, lat, props) => ({
+    geometry: { type: 'Point', coordinates: [lon, lat] },
+    properties: { osm_key: 'place', name, ...props },
+  });
+  const nearby = [
+    place('Springfield IL Auto', -89.6, 39.8, {
+      osm_key: 'shop',
+      city: 'Springfield',
+      state: 'Illinois',
+      countrycode: 'US',
+    }),
+  ];
+  const anywhere = [
+    place('Springfield', -89.65, 39.78, { state: 'Illinois', countrycode: 'US' }),
+  ];
+  const fetchImpl = photonPair(nearby, anywhere);
+
+  const result = await geocodeKeyless('Springfield, IL', {
+    bias: '39.70,-89.70|39.90,-89.50',
+    fetchImpl,
+  });
+
+  assert.doesNotMatch(result.label, /Auto/);
+  assert.match(result.label, /^Springfield/);
+});
+
+test('a region query without a camera bias still takes the place in the region', async () => {
+  // Unbiased, Photon can list the pub first; main took it because its name
+  // starts with "Paris".
+  const fetchImpl = photonPair([], [PARIS_TEXAS_PUB, PARIS_TX]);
+
+  const result = await geocodeKeyless('Paris, Texas', { fetchImpl });
+
+  assert.equal(Math.round(result.lat), 34, `got ${result.label}`);
+  assert.equal(fetchImpl.urls.length, 1);
+});
+
+test('a region is matched by whole words, and every word has to fit', () => {
+  const londonUk = {
+    geometry: { type: 'Point', coordinates: [-0.13, 51.51] },
+    properties: { osm_key: 'place', name: 'London', state: 'England', country: 'United Kingdom', countrycode: 'GB' },
+  };
+  // "on" is inside "london" and "england", but it is not a word of either.
+  assert.equal(selectQualifiedFeature([londonUk], 'London, ON'), null);
+  // "Texas" fits, "Ontario" does not, so the town does not qualify.
+  assert.equal(selectQualifiedFeature([PARIS_TX], 'Paris, Texas, Ontario'), null);
+  assert.equal(selectQualifiedFeature([PARIS_TX], 'Paris, Tex'), null);
+});
+
+test('a region can be the city or the county a candidate lies in', () => {
+  const street = {
+    geometry: { type: 'Point', coordinates: [-105.27, 40.02] },
+    properties: { osm_key: 'highway', name: 'Main Street', city: 'Boulder', countrycode: 'US' },
+  };
+  const town = {
+    geometry: { type: 'Point', coordinates: [-95.5555, 33.6609] },
+    properties: { osm_key: 'place', name: 'Paris', county: 'Lamar', countrycode: 'US' },
+  };
+  assert.equal(selectQualifiedFeature([street], 'Main Street, Boulder'), street);
+  assert.equal(selectQualifiedFeature([town], 'Paris, Lamar'), town);
+});
+
+test('when a POI and the place both fit the region, the place wins', async () => {
+  // A cafe named "Paris" in Lyon is in France too. Nearby it can rank above the
+  // city, and it would frame at rooftop range.
+  const cafe = {
+    geometry: { type: 'Point', coordinates: [4.84, 45.76] },
+    properties: { osm_key: 'amenity', osm_value: 'cafe', name: 'Paris', city: 'Lyon', country: 'France', countrycode: 'FR' },
+  };
+  const paris = {
+    geometry: { type: 'Point', coordinates: [2.35, 48.86] },
+    properties: { osm_key: 'place', osm_value: 'city', type: 'city', name: 'Paris', state: 'Île-de-France', country: 'France', countrycode: 'FR' },
+  };
+  const fetchImpl = photonPair([cafe, paris], [paris]);
+
+  const result = await geocodeKeyless('Paris, France', { bias: '45.70,4.80|45.80,4.90', fetchImpl });
+
+  assert.equal(Math.round(result.lat), 49, `got ${result.label}`);
+  assert.equal(fetchImpl.urls.length, 1);
+  // A POI alone still qualifies: "Main Street, Denver" names a street.
+  assert.equal(selectQualifiedFeature([cafe], 'Paris, France'), cafe);
+});
+
+test('if the unbiased request fails, the nearby whole-name match is still the answer', async () => {
+  const store = {
+    geometry: { type: 'Point', coordinates: [-104.94, 39.66] },
+    properties: { osm_key: 'shop', name: 'Bed, Bath & Beyond', city: 'Denver', countrycode: 'US' },
+  };
+  const urls = [];
+  const fetchImpl = (url) => {
+    urls.push(url);
+    if (!new URL(url).searchParams.has('lat')) return Promise.resolve({ ok: false, status: 503 });
+    return Promise.resolve({ ok: true, json: () => Promise.resolve({ features: [store] }) });
+  };
+
+  const outcome = await geocodeKeylessWithOutcome('Bed, Bath & Beyond', {
+    bias: '39.60,-105.00|39.70,-104.90',
+    fetchImpl,
+    cache: new Map(),
+  });
+
+  assert.match(outcome.place.label, /Denver/);
+  assert.equal(outcome.answered, true);
+  assert.equal(urls.length, 2);
+});
+
 test('accents and punctuation do not change what a name compares as', () => {
   assert.equal(normalizeToponym('Huế'), 'hue');
   assert.equal(normalizeToponym('Hạ Long Bay'), 'ha long bay');
@@ -300,7 +540,7 @@ test('accents and punctuation do not change what a name compares as', () => {
 // A fallback is only worth having where the app actually geocodes, and the app
 // geocodes in more than one place: the LOCATION search box, the Radio layer's
 // "near <place>" lookup, and the annotation resolver. Fixing one and leaving
-// the others is the failure this pins - the first version of this work fixed
+// the others is the failure this pins — the first version of this work fixed
 // the search box alone, so a keyless install still threw on "play radio near
 // Hanoi" while the search box beside it worked.
 //
@@ -335,7 +575,7 @@ test('a missing key is never a thrown error on the client', () => {
 test('the normalized result carries the canonical name its callers need', () => {
   // Two consumers want different halves of one answer: the search box shows
   // `label`, while the annotation resolver matches OSM features on `name`
-  // alone - a canonical name beats a parsed label there, because "Hà Nội,
+  // alone — a canonical name beats a parsed label there, because "Hà Nội,
   // Việt Nam" would let the country token win the footprint scoring.
   const result = normalizePhotonFeature(HANOI);
 
@@ -352,12 +592,12 @@ test('a feature with no name yields an empty string, never undefined', () => {
   assert.equal(typeof result.label, 'string');
 });
 
-test("Photon's own country name stays inside the label - it is not a field", () => {
+test("Photon's own country name stays inside the label — it is not a field", () => {
   // Photon answers in the feature's LANGUAGE: this fixture is the live service's
   // real reply for "Hanoi", and it says "Việt Nam", not "Vietnam". Tokyo answers
   // "日本", Moscow "Россия". Re-exporting that as a `country` field invites a
-  // consumer to match on it, and the one consumer that would - the Radio
-  // layer's `normalizeRadioCountryInput` - fails CLOSED on a name it cannot
+  // consumer to match on it, and the one consumer that would — the Radio
+  // layer's `normalizeRadioCountryInput` — fails CLOSED on a name it cannot
   // map, turning "radio near Ha Long" into an empty station list. The composed
   // label is the only honest use for a localized country name.
   assert.equal(HANOI.properties.country, 'Việt Nam');
@@ -373,7 +613,7 @@ test("Photon's own country name stays inside the label - it is not a field", () 
 // has already had to repair once: the Overpass disk cache persisted refusals
 // with normal data TTLs, so an install that hit a bad minute kept serving the
 // refusal for a month. A geocoder that memoises a network blip does the same
-// thing for a session - every later keystroke replays it without asking.
+// thing for a session — every later keystroke replays it without asking.
 
 test('an unanswered request is never memoized, so the next attempt really retries', async () => {
   let attempts = 0;
@@ -421,7 +661,7 @@ test('the outcome reports which of the two a null result was', async () => {
   assert.equal(found.answered, true);
   assert.equal(found.place.name, 'Hà Nội');
 
-  // A memo hit is by definition an answer - only answers are stored.
+  // A memo hit is by definition an answer — only answers are stored.
   assert.deepEqual(
     await geocodeKeylessWithOutcome('outcome probe a', { fetchImpl: failure }),
     { place: null, answered: true },
@@ -452,3 +692,13 @@ function readGeocodingConsumer(file) {
     ? [file, 'annotations/resolver.js'] : [file];
   return files.map((name) => fs.readFileSync(path.join(ROOT, 'src', name), 'utf8')).join('\n');
 }
+
+test('wrapped view bias stays near the antimeridian and malformed coordinates are omitted', () => {
+  for (const [bias, expected] of [['-20,170|-10,-171', 179.5], ['50,175|60,-165', -175], ['0,180|10,-180', 180], ['0,-180|10,180', 0]]) {
+    const params = new URL(photonSearchUrl('island', { bias })).searchParams;
+    assert.equal(Number(params.get('lon')), expected);
+  }
+  for (const bias of ['-91,0|0,1', '0,181|1,0', '10,0|0,1', ',|,', '0,1,2|3,4', '0,1|Infinity,2']) {
+    assert.equal(new URL(photonSearchUrl('island', { bias })).searchParams.has('lon'), false);
+  }
+});

@@ -52,7 +52,7 @@ page.on('console', (message) => {
 page.on('pageerror', (error) => consoleErrors.push(error.message));
 
 const check = (name, passed, detail = '') => {
-  console.log(`  [${passed ? 'PASS' : 'FAIL'}] ${name}${detail ? ` - ${detail}` : ''}`);
+  console.log(`  [${passed ? 'PASS' : 'FAIL'}] ${name}${detail ? ` — ${detail}` : ''}`);
   if (!passed) failures.push(name);
 };
 
@@ -200,8 +200,8 @@ const checkResponsiveStyleFocus = async (width) => {
     await page.focus('#control-panel-toggle');
     await pressTabs(2); // disclosure -> pin -> Normal
   }
-  for (const [index, style] of ['normal', 'thermal', 'snow'].entries()) {
-    if (index) await pressTabs(3);
+  for (const [tabs, style] of [[0, 'normal'], [3, 'thermal'], [2, 'noir']]) {
+    if (tabs) await pressTabs(tabs);
     const state = await styleFocusMetrics();
     check(`${width} px ${style} keyboard ring is visible and unclipped`,
       hasVisibleStyleFocus(state, style) && state.selectedStyle === 'normal'
@@ -396,7 +396,7 @@ try {
 
   // The tray's state changes are timer-driven: opening schedules the focus
   // hand-off to a Map Source tile 240ms later (scheduleMapSourceFocus in
-  // ui.js). A fixed sleep races that timer rather than observing it settle -
+  // ui.js). A fixed sleep races that timer rather than observing it settle —
   // 300ms left only 60ms of margin, which is what made these checks flake on
   // a clean checkout (#54). Wait on controller truth instead, the way the
   // Bing-switch check further down already does.
@@ -567,13 +567,13 @@ try {
   // Visual Styles precede the five Map Source tiles. Keep the existing opening
   // handoff to selected OSM, then use the user's real Shift+Tab path into styles.
   await pressTabs(5, true);
-  const snowFocus = await styleFocusMetrics();
-  check('Shift+Tab reaches Snow with a visible ring while Normal and OSM stay selected',
-    hasVisibleStyleFocus(snowFocus, 'snow') && !snowFocus.selected
-      && snowFocus.selectedStyle === 'normal' && snowFocus.selectedMap === 'osm',
-    JSON.stringify(snowFocus));
+  const noirFocus = await styleFocusMetrics();
+  check('Shift+Tab reaches Noir with a visible ring while Normal and OSM stay selected',
+    hasVisibleStyleFocus(noirFocus, 'noir') && !noirFocus.selected
+      && noirFocus.selectedStyle === 'normal' && noirFocus.selectedMap === 'osm',
+    JSON.stringify(noirFocus));
   await page.screenshot({ path: path.join(shotsDir, 'keyboard-style-focus.png') });
-  await pressTabs(3, true);
+  await pressTabs(2, true);
   const middleFocus = await styleFocusMetrics();
   check('Shift+Tab traverses the middle FLIR style without activating it',
     hasVisibleStyleFocus(middleFocus, 'thermal') && !middleFocus.selected
@@ -843,7 +843,7 @@ try {
       'key-required sources stay focusable, explained, and inert when no ion token is configured',
       ionSource.ariaDisabled === 'true'
         && ionSource.focusedBeforeActivation
-        // #143 names the missing key: "Needs CESIUM_ION_TOKEN - add it in Provider Settings".
+        // #143 names the missing key: "Needs CESIUM_ION_TOKEN — add it in Provider Settings".
         && /needs [A-Z_]+.*provider settings/i.test(ionSource.ariaLabel)
         && ionSource.activeId === activeBeforeIonAttempt
         && JSON.stringify(ionSource.active) === JSON.stringify([activeBeforeIonAttempt]),
@@ -1013,7 +1013,7 @@ try {
         label: 'flight',
       });
       const queuedNoticeReady = await waitForQueuedNotice(
-        'Shared flight could not be restored - feed unavailable',
+        'Shared flight could not be restored — feed unavailable',
       );
       const shareFailureQueued = snapshot();
       styleManager._updateGlobalLoadingFeedback(baseNow + 5299);
@@ -1054,8 +1054,8 @@ try {
       && acquiringFailureArbitration.failureEnd.state === 'error'
       && acquiringFailureArbitration.failureEnd.label === 'LOAD FAILED'
       && acquiringFailureArbitration.shareFailureStart.state === 'error'
-      && acquiringFailureArbitration.shareFailureStart.label === 'Shared flight could not be restored - feed unavailable'
-      && acquiringFailureArbitration.shareFailureEnd.label === 'Shared flight could not be restored - feed unavailable'
+      && acquiringFailureArbitration.shareFailureStart.label === 'Shared flight could not be restored — feed unavailable'
+      && acquiringFailureArbitration.shareFailureEnd.label === 'Shared flight could not be restored — feed unavailable'
       && acquiringFailureArbitration.settled.hidden === true,
     JSON.stringify(acquiringFailureArbitration),
   );
@@ -1063,7 +1063,7 @@ try {
   // Unpinned mouse-away dismissal AFTER a tile click. Chromium focuses a
   // <button> on mouse press, so a close-guard reading plain
   // `document.activeElement` left the tray permanently open once Map Source
-  // moved into it - switch a basemap and the popover never went away again
+  // moved into it — switch a basemap and the popover never went away again
   // (owner field report). The pin samples the exact mechanism: focus IS parked
   // inside the panel and is NOT `:focus-visible`, and the tray closes anyway.
   const setControlPanelPinned = (wanted) => page.evaluate((want) => {
@@ -1101,7 +1101,7 @@ try {
   // The OTHER half of the same rule, asserted positively: a KEYBOARD user who
   // tabbed to a tile and pressed Enter must keep the tray, because closing it
   // out from under them would strand the caret in a hidden surface. Same
-  // mouse-away that dismisses after a click, opposite outcome - so a fix that
+  // mouse-away that dismisses after a click, opposite outcome — so a fix that
   // simply deleted the focus guard would fail here.
   await setControlPanelPinned(false);
   await page.evaluate(() => window.__godsEyeView.styleManager
@@ -1253,7 +1253,7 @@ try {
   // unrecognized id, and `setStack()`'s `getStack(id) || getStack('photoreal')`
   // fallback requests Google 3D. A keyed run lands there; a keyless run keeps
   // its truthful OSM recovery. Either way, the active tile must reflect the
-  // rendered source - never a hidden fifth source with a ROAD status.
+  // rendered source — never a hidden fifth source with a ROAD status.
   await page.setViewport({ width: 1000, height: 900, deviceScaleFactor: 1 });
   const photorealAvailable = await page.$eval(
     '[data-stack-id="photoreal"]',
@@ -1299,8 +1299,8 @@ try {
     check(
       `a map=${legacyId} link restores to the best available fallback with its tile lit`,
       restored.activeId === expectedLegacyActive
-        // Keyless photoreal now explains itself as "Needs GOOGLE_MAPS_API_KEY - add it in
-        // Provider Settings - or a Cesium ion token …"; a keyed-but-failing route still says "unavailable".
+        // Keyless photoreal now explains itself as "Needs GOOGLE_MAPS_API_KEY — add it in
+        // Provider Settings — or a Cesium ion token …"; a keyed-but-failing route still says "unavailable".
         && (photorealAvailable ? restored.lastError === null : /needs [A-Z_]+|unavailable/i.test(restored.lastError || ''))
         && JSON.stringify(restored.pressed) === JSON.stringify([expectedLegacyActive]),
       JSON.stringify(restored),

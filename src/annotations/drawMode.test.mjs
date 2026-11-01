@@ -242,7 +242,7 @@ test('a finished area is a CLOSED ring, so its outline has no missing side', () 
   // an open ring would draw two of the triangle's three sides.
   assert.equal(spec.ring.length - 1, area.vertices.length);
 
-  // A line is NOT closed - it is a path, and joining its ends would invent a
+  // A line is NOT closed — it is a path, and joining its ends would invent a
   // segment the person never drew.
   const line = createDrawSession('line');
   addVertex(line, { lon: 0, lat: 0 });
@@ -260,7 +260,7 @@ test('a finished area is a CLOSED ring, so its outline has no missing side', () 
 });
 
 test('a shape straddling the antimeridian measures what it looks like', () => {
-  // 0.002 degrees square at the equator - about 223 m a side, so ~49,600 m2 -
+  // 0.002 degrees square at the equator — about 223 m a side, so ~49,600 m2 —
   // sitting across 180. Raw longitude arithmetic reads that 0.002-degree width
   // as 359.998 degrees: the area came out in the thousands of square
   // kilometres and the centroid landed on the Greenwich meridian, half a world
@@ -285,7 +285,7 @@ test('a shape straddling the antimeridian measures what it looks like', () => {
   );
   assert.ok(Math.abs(centre.lat) < 0.01, `got lat ${centre.lat}`);
 
-  // Length was already safe - haversine is periodic in the longitude delta -
+  // Length was already safe — haversine is periodic in the longitude delta —
   // and this pins that so a "fix" cannot break it.
   const across = pathLengthM([
     { lon: 179.999, lat: 0 },
@@ -329,4 +329,59 @@ test('longitude unwrapping is continuous and re-wraps to one canonical range', (
   assert.equal(wrapLongitude(10), 10);
   assert.equal(wrapLongitude(180), -180);
   assert.equal(unwrapLongitudes([]).length, 0);
+});
+
+test('a line that rounds up to a kilometre reads 1.0 km, not 1000 m', () => {
+  const metresPerDegree = (6371.0088 * 1000 * Math.PI) / 180;
+  const lat = 999.6 / metresPerDegree;
+  const line = createDrawSession('line');
+  addVertex(line, { lon: 0, lat: 0 });
+  addVertex(line, { lon: 0, lat });
+  const metres = pathLengthM(line.vertices);
+  assert.ok(
+    metres >= 999.5 && metres < 1000,
+    `length should round to 1000 m, got ${metres}`,
+  );
+  assert.equal(formatMeasure(line), '1.0 km');
+  assert.match(drawHint(line), /^1\.0 km · /);
+});
+
+test('an area that rounds up to the next unit reads in that unit', () => {
+  // A square on the equator whose shoelace area is about `m2`.
+  const square = (m2) => {
+    const side = Math.sqrt(m2) / 111320;
+    const area = createDrawSession('area');
+    for (const [lon, lat] of [
+      [0, 0],
+      [side, 0],
+      [side, side],
+      [0, side],
+    ])
+      addVertex(area, { lon, lat });
+    return area;
+  };
+  const almostHectare = square(9999.6);
+  const metres = ringAreaM2(almostHectare.vertices);
+  assert.ok(
+    metres >= 9999.5 && metres < 1e4,
+    `area should round to 10000 m², got ${metres}`,
+  );
+  assert.equal(formatMeasure(almostHectare), '1.0 ha');
+  assert.match(drawHint(almostHectare), /^1\.0 ha · /);
+  assert.equal(formatMeasure(square(9999.4)), '9999 m²');
+  // Pin the shoelace area too, so a geodesy change fails here and not as a unit.
+  const almostKm2 = square(999_960);
+  const nearKm2 = ringAreaM2(almostKm2.vertices);
+  assert.ok(
+    nearKm2 >= 999_500 && nearKm2 < 1e6,
+    `area should round to 100.0 ha, got ${nearKm2}`,
+  );
+  assert.equal(formatMeasure(almostKm2), '1.00 km²');
+  const under = square(999_400);
+  const underM2 = ringAreaM2(under.vertices);
+  assert.ok(
+    underM2 >= 998_500 && underM2 < 999_500,
+    `area should round to 99.9 ha, got ${underM2}`,
+  );
+  assert.equal(formatMeasure(under), '99.9 ha');
 });

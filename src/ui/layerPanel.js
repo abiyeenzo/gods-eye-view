@@ -73,6 +73,7 @@ const PANEL_GROUPS = [
       'local-firms',
       'fire-perimeters',
       'gnss-integrity',
+      's2-ghostmaps',
     ],
   },
   {
@@ -135,9 +136,11 @@ export function layerKeyRequirementTooltip(layer = {}) {
 
 const ROW_TEXT_SEPARATOR = ' · ';
 
-// A short Latin code joined by hyphens. Longer runs (a URL, a token in an
-// error) keep their break opportunities so they cannot overflow the rail.
-const HYPHENATED_CODE = /[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+/g;
+// A short Latin code joined by hyphens: every part after a hyphen is capitals
+// or digits (ADS-B, RTL-SDR, GTFS-RT). A compound such as "ALPR-Kameras" is a
+// word, not a code, and may break at its hyphen. Longer runs (a URL, a token
+// in an error) keep their break opportunities so they cannot overflow the rail.
+const HYPHENATED_CODE = /\b[A-Za-z0-9]+(?:-[A-Z0-9]+)+(?![A-Za-z0-9])/g;
 const HYPHENATED_CODE_MAX = 16;
 
 /** A span for one run of row text; `keep` stops the browser breaking inside it. */
@@ -316,9 +319,7 @@ export class LayerPanel {
       const icon = document.createElement('span');
       icon.className = 'data-icon';
       icon.setAttribute('aria-hidden', 'true');
-      // iconSvg values are static markup from src/icons.js, never user data.
-      if (layer.iconSvg) icon.innerHTML = layer.iconSvg;
-      else icon.textContent = layer.icon;
+      icon.textContent = layer.icon;
       const name = document.createElement('span');
       name.className = 'data-name';
       setRowText(name, panelLabel(layer));
@@ -376,7 +377,7 @@ export class LayerPanel {
 
       // Optional per-layer sub-controls (chips + color legend). The click
       // listener is delegated and attached once here, so it survives
-      // _refreshTogglePanel - which only rewrites the container's contents.
+      // _refreshTogglePanel — which only rewrites the container's contents.
       if (this.hasRowControls(layer.id)) {
         // A layer whose controls settle asynchronously (a chunked catalog load
         // that can also fail) pushes a re-render through this; nothing else
@@ -404,7 +405,7 @@ export class LayerPanel {
           row.appendChild(controls);
           // An ordered list below the chips, for a layer whose row carries a
           // sequence (turn-by-turn directions). Its own delegated listener, its
-          // own container - the chip row stays a chip row.
+          // own container — the chip row stays a chip row.
           const list = document.createElement('ol');
           list.className = 'data-row-list';
           list.hidden = true;
@@ -468,7 +469,6 @@ export class LayerPanel {
         .map((layer) => ({
           id: layer.id,
           icon: layer.icon,
-          iconSvg: layer.iconSvg,
           ...this._rowControlsFor(layer.id),
         })),
     );
@@ -477,7 +477,7 @@ export class LayerPanel {
   /**
    * Write a row's count. Outside English a count phrase ("24 nearby · 2 on
    * screen") gets its own line, or it squeezes a longer translated name to a
-   * word per line. "-" is marked so a wide status chip can replace it
+   * word per line. "—" is marked so a wide status chip can replace it
    * (radio.css).
    */
   _syncCount(row, count, stats) {
@@ -488,14 +488,14 @@ export class LayerPanel {
       typeof stats.countLabel === 'string' &&
       /\d/.test(stats.countLabel);
     row.classList.toggle('data-toggle-row--count-line', phrase);
-    count.classList.toggle('data-count-empty', text === '-');
+    count.classList.toggle('data-count-empty', text === '—');
   }
 
   /** Qualify a loaded count when it does not mean items currently on screen. */
   _layerCountText(stats) {
     if (typeof stats.countLabel === 'string' && stats.countLabel.trim())
       return stats.countLabel;
-    return stats.count ? this._formatCount(stats.count) : '-';
+    return stats.count ? this._formatCount(stats.count) : '—';
   }
 
   /**
@@ -504,8 +504,8 @@ export class LayerPanel {
    * it) so a quiet row stays quiet.
    *
    * Chip BUTTONS are reconciled in place, keyed by chip id, rather than
-   * rebuilt: this runs on every panel refresh - including the one the chip's
-   * own click triggers - and replacing the node would drop keyboard focus
+   * rebuilt: this runs on every panel refresh — including the one the chip's
+   * own click triggers — and replacing the node would drop keyboard focus
    * mid-interaction. Legend entries are rebuilt only when their content changes;
    * the info node is retained across refreshes.
    * @param {HTMLElement|null} container The row's `.data-toggle-controls` node.
@@ -583,8 +583,8 @@ export class LayerPanel {
    * Each entry is a real `<button>` inside a real `<li>`, so Tab reaches it and
    * Enter activates it with no key handling of our own, and the `<ol>` carries
    * the ordering a screen reader announces. Items are reconciled in place,
-   * keyed by id, for the same reason chips are: this runs on every refresh -
-   * including the one a click on the list triggers - and replacing the node
+   * keyed by id, for the same reason chips are: this runs on every refresh —
+   * including the one a click on the list triggers — and replacing the node
    * would drop keyboard focus mid-interaction.
    * @param {HTMLElement|null} container The row's `.data-row-list` node.
    * @param {{ariaLabel?: string, items?: Array<object>}|null} list Descriptor.
@@ -635,7 +635,11 @@ export class LayerPanel {
     const stats = layer.stats || {};
     const feedState = layerFeedState(stats);
     const stateLabel = t(FEED_STATE_LABEL_KEYS[feedState]);
-    const source = sourceLabel(stats.source || layer.source);
+    // A layer marks source text that is data rather than a catalog name.
+    const source =
+      stats.sourceVerbatim === true && stats.source
+        ? stats.source
+        : sourceLabel(stats.source || layer.source);
     const lifecycleState =
       layer.lifecycleState || (layer.enabled ? 'enabled' : 'disabled');
     if (lifecycleState === 'enabling' || lifecycleState === 'disabling') {
@@ -716,18 +720,24 @@ export class LayerPanel {
       });
     }
     if (feedState === 'stale') {
+      // A layer drawing cached upstream data (Traffic's proxy tiles) dates the
+      // row by the oldest of it, not by the load that re-served it.
+      const dataAgo =
+        Number(stats.oldestTileAt) > 0
+          ? this._timeAgo(stats.oldestTileAt)
+          : ago;
       if (typeof stats.retryInSec === 'number' && stats.retryInSec > 0) {
         return t('{state} · {source} · {ago} · retrying in {seconds}s', {
           state: stateLabel,
           source,
-          ago,
+          ago: dataAgo,
           seconds: stats.retryInSec,
         });
       }
       return t('{state} · {source} · {ago}', {
         state: stateLabel,
         source,
-        ago,
+        ago: dataAgo,
       });
     }
     if (typeof stats.loadingLabel === 'string' && stats.loadingLabel.trim()) {

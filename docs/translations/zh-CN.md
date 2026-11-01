@@ -8,7 +8,7 @@ Translation sources: abiyeenzo (#914) and EDIT-Aeterna (#979).
 
 - Mainland usage and Simplified characters. Address the user neutrally, without 您/你 where a plain imperative works: 「点击地图」, 「重试」.
 - Chinese has no case: an UPPERCASE English HUD label becomes the same short Chinese label. Keep labels as short as the English: 「实时」, 「过期」, 「关」.
-- Full-width punctuation in Chinese text: ，。：；？！（）“”. A dash is a spaced hyphen 「 - 」, never a cadratin; keep `·` as the HUD separator and `…` for ellipsis.
+- Full-width punctuation in Chinese text: ，。：；？！（）“”. A dash is 「——」 without spaces; keep `·` as the HUD separator and `…` for ellipsis.
 - One space between Chinese and Latin letters or digits: 「AIS 船舶」, 「24 小时」, 「{count} 个」. No space next to full-width punctuation.
 - Units: km, m, km/h, m/s, kn, ft, MW, °, % stay as written; time words are 小时, 分钟, 秒 after a number (「5 分钟前」).
 - Product names, provider names and codes stay as they are: Google, Cesium, CelesTrak, NOAA, FIRMS, AIS, ADS-B, GNSS, CCTV, HUD, CRT, NVG, FLIR, WHOT/BHOT, Ironbow, CONUS.
@@ -43,7 +43,7 @@ Translation sources: abiyeenzo (#914) and EDIT-Aeterna (#979).
 | briefing / panel / dock               | 简报 / 面板 / 停靠栏        |
 | preset / visual preset                | 预设 / 视觉预设             |
 | Display / HUD layout                  | 显示 / HUD 布局             |
-| Tactical / Operator / Minimal / Cyber | 战术 / 操作员 / 精简 / 赛博 |
+| Tactical / Minimal / Cyber            | 战术 / 精简 / 赛博          |
 | Scope (circular viewport mask) / keyhole | 视域                      |
 | Clean UI                              | 纯净界面                    |
 | cockpit                               | 座舱                        |

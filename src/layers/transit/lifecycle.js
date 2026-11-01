@@ -9,11 +9,10 @@ import {
   TRANSIT_SELECTED_OVERLAY_SOURCE_ID,
 } from './policy.js';
 import { TRANSIT_ENABLED_FEEDS } from '../../data/transitFeeds.js';
-import { ICONS } from '../../icons.js';
 
 /**
  * Init / enable / disable / update / destroy for one Transit layer instance.
- * Everything acquired here is released here - primitives, listeners, the sprite
+ * Everything acquired here is released here — primitives, listeners, the sprite
  * registration, the pick owner, the render hold, and the camera sensitivity
  * this layer borrowed.
  * @param {object} context
@@ -119,8 +118,7 @@ export function createLifecycle({ state, services, parts }) {
   const methods = {
     id: 'transit',
     name: 'Transit',
-    icon: '',
-    iconSvg: ICONS.bus,
+    icon: '🚌',
     source: 'GTFS-RT',
 
     /**

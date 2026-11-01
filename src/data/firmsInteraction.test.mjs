@@ -8,6 +8,9 @@ import * as Cesium from 'cesium';
 import { createFirmsHeatmapLayer, applyFirmsOverlayPolicy, buildCellCard } from './firmsHeatmap.js';
 import { fireDetectionKey } from './firmsLabels.js';
 import { registerPickOwner, unregisterPickOwner } from './pickRegistry.js';
+import { getSelectedEntityContext } from './contextStore.js';
+import { setLocale } from '../i18n/index.js';
+import { shownEntityLabel } from '../voice/speech.js';
 import { WORLD_FOCUS_REQUEST_EVENT } from '../worldFocus.js';
 import { readLayerSource } from '../testSupport/readLayerSource.mjs';
 import path from 'node:path';
@@ -34,7 +37,7 @@ function makeFire(overrides = {}) {
 
 /**
  * Stand the layer up far enough to drive one click. `cardHit` is what the
- * overlay host reports under the click position - the real host only publishes
+ * overlay host reports under the click position — the real host only publishes
  * rects for `interactive` entries, so a stub hit is the contract a painted,
  * actionable card presents.
  */
@@ -154,7 +157,7 @@ test('duplicate-coordinate detections get their own cards and focus targets', ()
 
 test('selection restoration uses the same key the cards and focus use', () => {
   // Restoration ran on raw lat/lon/acqMs, which collapses co-located
-  // detections from different satellites - the selection could come back on
+  // detections from different satellites — the selection could come back on
   // the wrong record. Reachable only through the 30-minute refetch, so this is
   // a source contract; the key's own behavior is proven above.
   const match = LAYER_SOURCE.match(/function findMatchingFire\(previous\) \{([\s\S]*?)\n  \}\n/);
@@ -180,7 +183,7 @@ test('painted detection cards are keyed by the stable detection key', () => {
   }
 });
 
-test('an aggregated cell card is never actionable - it is not one fire', () => {
+test('an aggregated cell card is never actionable — it is not one fire', () => {
   const cell = buildCellCard(
     { cell: { count: 14, maxFrp: 210, newestAcqMs: 0, latCell: 30, lonCell: -98 }, position: {} },
     Date.now(),
@@ -218,7 +221,7 @@ test('clicking a fire sprite selects it and requests the camera transfer', () =>
 test('clicking a fire CARD behaves exactly like clicking its sprite', () => {
   const fire = makeFire();
   // The click lands on the card, but the scene pick returns the 3D-Tiles
-  // surface behind it - the case that used to clear the selection.
+  // surface behind it — the case that used to clear the selection.
   const h = harness({
     fires: [fire],
     picked: { primitive: {}, content: {}, featureId: 0 },
@@ -231,6 +234,27 @@ test('clicking a fire CARD behaves exactly like clicking its sprite', () => {
     assert.equal(h.requests[0].id, fireDetectionKey(fire));
   } finally {
     h.cleanup();
+  }
+});
+
+// The voice model reads these labels as data (track_entity, get_entity_context,
+// pointer_context); the voice card translates them where it shows them.
+test('fire labels stay English data in a translated interface', () => {
+  const h = harness({ fires: [makeFire()], picked: { id: 'firms-7' } });
+  try {
+    setLocale('ru');
+    h.click();
+    assert.equal(getSelectedEntityContext().label, 'Fire · FRP 1520 MW');
+    // The card's pattern must match what the producer actually writes.
+    assert.equal(
+      shownEntityLabel(getSelectedEntityContext().label),
+      'Пожар · FRP 1520 МВт',
+    );
+    assert.equal(h.layer.getSelectedInfo().label, 'Fire · FRP 1520 MW');
+    assert.equal(h.layer.getStrongestFire().label, 'Fire · FRP 1520 MW');
+  } finally {
+    h.cleanup();
+    setLocale('en');
   }
 });
 
@@ -342,7 +366,7 @@ test('a refresh that drops the selected fire emits an eviction the readout can a
     assert.equal(
       cleared[0].reason,
       'evicted',
-      'the detection left the feed - it was not deselected',
+      'the detection left the feed — it was not deselected',
     );
   } finally {
     if (priorFetch === undefined) delete globalThis.fetch;

@@ -5,7 +5,6 @@ import {
   DEFAULT_CAMERA_CALIBRATION,
   CALIBRATION_RANGE_FLOOR_M,
 } from './policy.js';
-import { ICONS } from '../../icons.js';
 
 export function createControls({ state: layerState, services, parts, source }) {
   const { holdContinuousRender, releaseContinuousRender } = services.render;
@@ -16,9 +15,7 @@ export function createControls({ state: layerState, services, parts, source }) {
 
     name: 'CCTV',
 
-    icon: '',
-
-    iconSvg: ICONS.video,
+    icon: '📹',
 
     source: 'CCTV + Street View fallback',
 
@@ -35,7 +32,7 @@ export function createControls({ state: layerState, services, parts, source }) {
      * @param {number} [params.autoHopSec] - Auto-hop interval in seconds.
      * @param {string} [params.selectedCameraId] - Camera ID to activate.
      * @param {Object} [params.calibration] - Calibration config: `patch` edits
-     *   the live pose (save-gated - no persistence), `save` persists the current
+     *   the live pose (save-gated — no persistence), `save` persists the current
      *   calibration as manual, `reset` restores the base prior.
      * @param {boolean} [params.calibrationMode] - Toggle the ADJUST gizmo.
      * @param {boolean} [params.focusSelected] - Fly to the active camera.
@@ -115,7 +112,7 @@ export function createControls({ state: layerState, services, parts, source }) {
             typeof calibrationCfg.patch === 'object'
           ) {
             // Save-gated persistence (design §3e): a patch edits the LIVE pose
-            // only. The store - and the CALIBRATED badge's `calSource` - move
+            // only. The store — and the CALIBRATED badge's `calSource` — move
             // exclusively on the explicit `save` action below. (§9.1 range-slider
             // clamp override + B9b re-ground live inside applyCalibrationPatch.)
             parts.calibration.applyCalibrationPatch(
@@ -208,22 +205,21 @@ export function createControls({ state: layerState, services, parts, source }) {
      * @returns {{ position: Cesium.Cartesian3, id: string, type: string }[]}
      */
     getDetectableObjects(options = {}) {
-      if (!layerState._enabled || layerState._records.length === 0) return [];
+      // The cameras the view pass shows, not icons it has hidden.
+      const records = layerState._viewRecords;
+      if (!layerState._enabled || records.length === 0) return [];
       const maxCount = Number.isFinite(options.maxCount)
         ? Math.max(1, Math.floor(options.maxCount))
-        : layerState._records.length;
+        : records.length;
       const seed = Number.isFinite(options.seed) ? Math.floor(options.seed) : 0;
-      const stride = Math.max(
-        1,
-        Math.ceil(layerState._records.length / maxCount),
-      );
+      const stride = Math.max(1, Math.ceil(records.length / maxCount));
       const start = seed % stride;
 
       const objects = [];
-      for (let i = start; i < layerState._records.length; i += stride) {
-        const camera = layerState._records[i].camera;
+      for (let i = start; i < records.length; i += stride) {
+        const camera = records[i].camera;
         objects.push({
-          position: layerState._records[i].position,
+          position: records[i].position,
           sourceId: camera.id,
           // Short semantic code where the id is opaque (see cameraDisplayCode).
           id: `CAM-${camera.code || camera.id}`,

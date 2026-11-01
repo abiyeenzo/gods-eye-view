@@ -202,8 +202,8 @@ function encode(state) {
 
 test('production registry is exact, canonical, and rejects incomplete contracts', async () => {
   assert.equal(validateLayerStateRegistry(), true);
-  assert.equal(REGISTERED_LAYER_IDS.length, 31);
-  assert.equal(new Set(REGISTERED_LAYER_IDS).size, 31);
+  assert.equal(REGISTERED_LAYER_IDS.length, 32);
+  assert.equal(new Set(REGISTERED_LAYER_IDS).size, 32);
   assert.ok(REGISTERED_LAYER_IDS.includes('transit'));
   assert.deepEqual(REGISTERED_LAYER_IDS, [...REGISTERED_LAYER_IDS].sort());
   assert.deepEqual(LEGACY_LAYER_STATE_TOKENS, {
@@ -242,19 +242,19 @@ test('production registry is exact, canonical, and rejects incomplete contracts'
   for (const [id, token] of Object.entries(LEGACY_LAYER_STATE_TOKENS)) {
     assert.equal(LAYER_STATE_TOKEN_RESERVATIONS[id], token);
   }
-  assert.equal(nextLayerStateToken(), '5');
+  assert.equal(nextLayerStateToken(), '6');
   assert.equal(
     nextLayerStateToken({
       ...LAYER_STATE_TOKEN_RESERVATIONS,
-      alpha: '5',
-      bravo: '6',
+      alpha: '6',
+      bravo: '7',
     }),
-    '7',
+    '8',
   );
   const digitsExhausted = {
     ...LAYER_STATE_TOKEN_RESERVATIONS,
     ...Object.fromEntries(
-      [...'56789'].map((digit) => [`prior-${digit}`, digit]),
+      [...'6789'].map((digit) => [`prior-${digit}`, digit]),
     ),
   };
   assert.equal(nextLayerStateToken(digitsExhausted), '00');
@@ -307,8 +307,8 @@ test('production registry is exact, canonical, and rejects incomplete contracts'
   assert.equal(
     validateLayerStateAllocations(LAYER_STATE_TOKEN_RESERVATIONS, {
       ...LAYER_STATE_TOKEN_RESERVATIONS,
-      future: '5',
-      next: '6',
+      future: '6',
+      next: '7',
     }),
     true,
   );
@@ -318,7 +318,7 @@ test('production registry is exact, canonical, and rejects incomplete contracts'
         ...LAYER_STATE_TOKEN_RESERVATIONS,
         future: '00',
       }),
-    /next free token 5/,
+    /next free token 6/,
   );
   const beforeLastDigit = { ...digitsExhausted };
   delete beforeLastDigit['prior-9'];
@@ -341,10 +341,10 @@ test('production registry is exact, canonical, and rejects incomplete contracts'
   assert.throws(
     () =>
       validateLayerStateAllocations(
-        { ...LAYER_STATE_TOKEN_RESERVATIONS, merged: '5' },
-        { ...LAYER_STATE_TOKEN_RESERVATIONS, merged: '5', competing: '5' },
+        { ...LAYER_STATE_TOKEN_RESERVATIONS, merged: '6' },
+        { ...LAYER_STATE_TOKEN_RESERVATIONS, merged: '6', competing: '6' },
       ),
-    /next free token 6/,
+    /next free token 7/,
   );
   assert.throws(
     () => validateLayerStateAllocations({ future: '00' }, { future: '01' }),
@@ -630,7 +630,7 @@ test('compact URL omits absent-meaning option state and still resolves to it', (
   // this is the ledger of what an OMITTED token means, so changing any of these
   // fails HERE and forces the change to be acknowledged.
   //
-  // Note this is the absent-meaning ledger, NOT the default ledger - the two
+  // Note this is the absent-meaning ledger, NOT the default ledger — the two
   // diverged for `models3d` on 2026-08-22. Its default moved to `true`, but an
   // omitted `e` still means `false` because that is what schema v2 has always
   // meant to the links already in the wild, so `false` is what belongs in a
@@ -659,9 +659,9 @@ test('compact URL omits absent-meaning option state and still resolves to it', (
   assert.deepEqual(roundTrip.options.satellites.selectedSatTrackingId, null);
 });
 
-test('a fresh boot starts 3D aircraft ON in proximity - codec, both layers, and the rail agree', async () => {
+test('a fresh boot starts 3D aircraft ON in proximity — codec, both layers, and the rail agree', async () => {
   // Owner directive 2026-08-22: the DISPLAY-rail 3D toggle defaults ON with mode
-  // `proximity`, because proximity is itself the budget - models materialize only
+  // `proximity`, because proximity is itself the budget — models materialize only
   // below the fleet altitude ceiling and only for the nearest MODEL_MAX in view,
   // so "on" costs nothing at globe scale and `all` stays a deliberate opt-in.
   //
@@ -703,7 +703,7 @@ test('a fresh boot starts 3D aircraft ON in proximity - codec, both layers, and 
   assert.deepEqual(
     paramsCalls,
     [],
-    'a fresh boot restores nothing - which is exactly why the module initializers below must match',
+    'a fresh boot restores nothing — which is exactly why the module initializers below must match',
   );
   coordinator.destroy();
 
@@ -740,7 +740,7 @@ test('a fresh boot starts 3D aircraft ON in proximity - codec, both layers, and 
   assert.match(
     html,
     /class="pp-toggle-btn active" id="models3d-toggle" aria-pressed="true"/,
-    'index.html: the 3D button paints lit on first paint, before ui.js runs - and says so',
+    'index.html: the 3D button paints lit on first paint, before ui.js runs — and says so',
   );
   assert.match(
     ui,
@@ -762,7 +762,7 @@ test('a fresh boot starts 3D aircraft ON in proximity - codec, both layers, and 
 test('a v2 link written before the flip still means what its author saw: 3D OFF', () => {
   // The regression this pins, caught in review: schema v2 shipped with 3D OFF as
   // the OMITTED default, so every link already in the wild says "off" by saying
-  // nothing. Moving the default without moving the codec turned all of them ON -
+  // nothing. Moving the default without moving the codec turned all of them ON —
   // the same omission meaning two different things inside one schema version.
   //
   // `v=2&l=f` is the canonical parent-era link. It must decode OFF forever.
@@ -796,7 +796,7 @@ test('a v2 link written before the flip still means what its author saw: 3D OFF'
 
 test('the new default is written EXPLICITLY, so no omission is ambiguous', () => {
   // Because an absent `e` is pinned to the historical OFF above, the new ON
-  // default cannot ride in on the omission - it has to be emitted. This is the
+  // default cannot ride in on the omission — it has to be emitted. This is the
   // other half of the same invariant: break it and fresh ON links silently become
   // OFF links for their recipients.
   const on = createDefaultLayerState();
@@ -818,7 +818,7 @@ test('the new default is written EXPLICITLY, so no omission is ambiguous', () =>
     true,
   );
 
-  // And OFF is the omission, matching what v2 already meant - one meaning, one
+  // And OFF is the omission, matching what v2 already meant — one meaning, one
   // encoding, across both eras.
   const off = createDefaultLayerState();
   off.enabledLayerIds = ['flights'];
@@ -845,7 +845,7 @@ test('the new default is written EXPLICITLY, so no omission is ambiguous', () =>
 
 test('a share link that carries 3D OFF still restores OFF at both aircraft layers', async () => {
   // The 2026-08-22 default governs FRESH sessions only. It must never overwrite a
-  // choice a link states - and after the codec fix above, OFF is stated by the
+  // choice a link states — and after the codec fix above, OFF is stated by the
   // absent token, which is what v2 always meant.
   const state = createDefaultLayerState();
   state.enabledLayerIds = ['flights', 'military'];
@@ -860,7 +860,7 @@ test('a share link that carries 3D OFF still restores OFF at both aircraft layer
   );
   assert.equal(decoded.options.flights.models3dMode, 'proximity');
 
-  // And the restore really pushes OFF at both aircraft layers - `military`
+  // And the restore really pushes OFF at both aircraft layers — `military`
   // mirrors the `flights` option owner, so one shared link disarms both.
   const calls = { flights: [], military: [] };
   const manager = productionManager({
@@ -1830,7 +1830,7 @@ test('feed failure is not misreported as target absence and malformed time never
   });
   await coordinator.start({ shareLayerState: state, shareCreatedAtMs: null });
   const pending = await coordinator.restoreShareTrackingSelection();
-  // A partial catalog is a "not here YET" too - hold it, do not announce.
+  // A partial catalog is a "not here YET" too — hold it, do not announce.
   assert.equal(pending.classification, 'pending');
   assert.equal(statuses.length, 1);
   assert.equal(statuses[0].classification, 'pending');
@@ -2316,7 +2316,7 @@ test('an oversized enabled-layer field fails closed instead of decoding a prefix
 //
 // Aborting only the restore controller was a no-op by the time the watch
 // existed (the controller has already settled), so the orphaned timer went on
-// to announce "Shared … unavailable" at its deadline - a verdict about work
+// to announce "Shared … unavailable" at its deadline — a verdict about work
 // nothing was attempting any more. Both paths below cancel the module latch in
 // production: an explicit parameter replacement, and the owner layer going
 // away (at any origin, including a programmatic disable).
@@ -2857,4 +2857,136 @@ test('explicit provider switches reach durable state without adopting unrelated 
   } finally {
     coordinator.destroy();
   }
+});
+
+function enabledLayerParam(sink) {
+  return new URLSearchParams(encode(sink.provider())).get('l');
+}
+
+test('Clear All drops a saved layer a context mode had already switched off', async () => {
+  const manager = productionManager();
+  const storage = memoryStorage();
+  const sink = shareSink();
+  const coordinator = new LayerStateCoordinator(manager, sink, { storage });
+  await coordinator.start();
+  await manager.setEnabled('earthquakes', true, { origin: 'user' });
+  await manager.setEnabled('flights', true, { origin: 'user' });
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, [
+    'earthquakes',
+    'flights',
+  ]);
+  // Context isolation is a temporary, passive takeover: the saved choice stays.
+  await manager.setEnabled('earthquakes', false, { origin: 'programmatic' });
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, [
+    'earthquakes',
+    'flights',
+  ]);
+
+  const updatesBefore = sink.updates;
+  const result = await manager.clearSelectedLayers({ origin: 'user' });
+  assert.deepEqual(result.targetIds, ['flights']);
+  assert.ok(sink.updates > updatesBefore, 'the URL is told to refresh');
+  assert.deepEqual([...manager.getEnabledLayerIds()], []);
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, []);
+  assert.equal(enabledLayerParam(sink), '', 'the URL carries no layers');
+  assert.deepEqual(
+    parseStoredLayerState(storage.getItem(LAYER_STATE_STORAGE_KEY))
+      .enabledLayerIds,
+    [],
+    'a reload restores nothing',
+  );
+  coordinator.destroy();
+});
+
+test('Clear All drops a saved layer a dependency release superseded mid-batch', async () => {
+  let manager;
+  manager = productionManager({
+    // Contacts-style owner: its own teardown releases a borrowed dependency
+    // without awaiting it, which supersedes Clear All's turn for that layer.
+    'military-awareness': {
+      disable() {
+        void manager.setEnabled('flights', false, { origin: 'programmatic' });
+        return true;
+      },
+    },
+  });
+  const storage = memoryStorage();
+  const sink = shareSink();
+  const coordinator = new LayerStateCoordinator(manager, sink, { storage });
+  await coordinator.start();
+  await manager.setEnabled('earthquakes', true, { origin: 'user' });
+  await manager.setEnabled('flights', true, { origin: 'user' });
+  await manager.setEnabled('military-awareness', true, { origin: 'user' });
+
+  const result = await manager.clearSelectedLayers({ origin: 'user' });
+  assert.equal(
+    result.items.find((item) => item.id === 'flights')?.superseded,
+    true,
+    'the fixture reproduces the superseded flights turn',
+  );
+  assert.deepEqual([...manager.getEnabledLayerIds()], []);
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, []);
+  assert.equal(enabledLayerParam(sink), '');
+  coordinator.destroy();
+});
+
+test('Clear All keeps a layer a newer explicit request turned back on', async () => {
+  const manager = productionManager();
+  const sink = shareSink();
+  const coordinator = new LayerStateCoordinator(manager, sink, {
+    storage: memoryStorage(),
+  });
+  await coordinator.start();
+  await manager.setEnabled('earthquakes', true, { origin: 'user' });
+  await manager.setEnabled('flights', true, { origin: 'user' });
+  const clearing = manager.clearSelectedLayers({ origin: 'user' });
+  // A direct request issued during the batch owns its layer.
+  const reenable = manager.setEnabled('earthquakes', true, { origin: 'user' });
+  await Promise.all([clearing, reenable]);
+  assert.deepEqual([...manager.getEnabledLayerIds()], ['earthquakes']);
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, [
+    'earthquakes',
+  ]);
+  assert.equal(enabledLayerParam(sink), 'e');
+  coordinator.destroy();
+});
+
+test('a passive clear never rewrites saved layers', async () => {
+  const manager = productionManager();
+  const storage = memoryStorage();
+  const coordinator = new LayerStateCoordinator(manager, shareSink(), {
+    storage,
+  });
+  await coordinator.start();
+  await manager.setEnabled('flights', true, { origin: 'user' });
+  await manager.setEnabled('flights', false, { origin: 'programmatic' });
+  const writes = storage.writes.length;
+  await manager.clearSelectedLayers({ origin: 'programmatic' });
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, ['flights']);
+  assert.equal(storage.writes.length, writes);
+  coordinator.destroy();
+});
+
+test('Clear All cancels a saved restore still waiting to start', async () => {
+  const gate = deferred();
+  const manager = productionManager();
+  const sink = shareSink();
+  const coordinator = new LayerStateCoordinator(manager, sink, {
+    storage: memoryStorage(),
+    restoreGate: gate.promise,
+  });
+  const params = new URLSearchParams('v=2&l=e.f');
+  const restore = coordinator.start({
+    shareLayerState: decodeLayerStateParams(params),
+  });
+  await manager.clearSelectedLayers({ origin: 'user' });
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, []);
+  gate.resolve();
+  const results = await restore;
+  for (const id of ['earthquakes', 'flights']) {
+    assert.equal(results.find((result) => result.layerId === id).succeeded, false);
+  }
+  assert.deepEqual([...manager.getEnabledLayerIds()], []);
+  assert.equal(enabledLayerParam(sink), '');
+  coordinator.destroy();
 });

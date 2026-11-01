@@ -67,23 +67,6 @@
   color: #bdefff;
 }
 
-/* SVG pin, replacing the old emoji glyph that led the readout. */
-.location-mini-city::before {
-  content: '';
-  display: inline-block;
-  width: 0.9em;
-  height: 0.9em;
-  margin-right: 3px;
-  vertical-align: -1px;
-  background: currentColor;
-  mask-image: url('/location.svg');
-  -webkit-mask-image: url('/location.svg');
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-}
-
 .location-mini-poi {
   font-family: var(--font-mono);
   font-size: 8px;
@@ -314,4 +297,21 @@
 
 #location-search.searching {
   opacity: 0.5;
+}
+
+.location-search-error {
+  /* Its own line under the search row, which clips overflow in the dock. */
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 99, 99, 0.45);
+  border-radius: 6px;
+  background: rgba(30, 8, 10, 0.92);
+  color: #ffb3b3;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.location-search-error:empty {
+  display: none;
 }

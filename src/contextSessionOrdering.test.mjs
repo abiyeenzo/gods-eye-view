@@ -94,6 +94,15 @@ test('context restore settles the Contacts coordinator before dependency fanout'
   assert.match(restore, /excludeLayerIds: settleContactsCoordinator[\s\S]*?contactsCoordinatorId/);
 });
 
+test('Clear All during the Contacts settle stops the snapshot coming back', () => {
+  const restore = _restoreContextSession.toString();
+  const coordinatorOff = restore.indexOf('const coordinatorSettled = await this._dataManager.setEnabled(');
+  const cancelled = restore.indexOf('if (restoreState.cancelled) return;', coordinatorOff);
+  const fanout = restore.indexOf('await this._dataManager.restoreEnabledLayerIds(', coordinatorOff);
+  assert.ok(cancelled > coordinatorOff, 'the cancellation is checked after Contacts settles');
+  assert.ok(fanout > cancelled, 'and before the snapshot fans out');
+});
+
 test('context restore preserves its exact pending target after a failed transition', () => {
   const restore = _restoreContextSession.toString();
   assert.match(restore, /const replayError = await settleContextIntentReplay\(\{/);
@@ -202,8 +211,8 @@ test('Context entry awaits isolation and direct shell routes isolate in the visi
   assert.match(select, /await this\._restoreContextSession\(\{ notificationToken, signal \}\)/);
   assert.doesNotMatch(select, /void this\._clearLayersOutsideContextMode\(mode\)/);
 
-  // The cross-mode teardown restores UNCONDITIONALLY - an aborted caller must
-  // never skip it - and then stops. A cancelled or failed cross-mode switch
+  // The cross-mode teardown restores UNCONDITIONALLY — an aborted caller must
+  // never skip it — and then stops. A cancelled or failed cross-mode switch
   // rests on Context OFF; the honesty lives in the REPORT, not in a racy
   // attempt to put the prior mode back (see the note above
   // _restoreContextSessionAfterLayerSettles).
@@ -258,7 +267,7 @@ test('a lost cross-mode switch says Context is off, and the state agrees', () =>
   );
   assert.match(
     setter,
-    /error: crossModeSwitchLost\s*\? `Switch to \$\{contextModeWord\(canonical\)\} did not complete - Context is now off`/,
+    /error: crossModeSwitchLost\s*\? `Switch to \$\{contextModeWord\(canonical\)\} did not complete — Context is now off`/,
     'a lost switch is reported in plain words, in the vocabulary the reader uses',
   );
   assert.match(setter, /\{ contextOff: true, priorMode \}/, 'and machine-readably');
